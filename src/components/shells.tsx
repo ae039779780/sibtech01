@@ -1,10 +1,28 @@
+"use client";
+
 import { Logo } from "@/components/brand";
 import { logoutAction } from "@/app/actions/auth";
+import { Avatar } from "@/components/money-ui";
 import { cn } from "@/lib/format";
 import type { SessionUser } from "@/lib/auth/session";
+import {
+  Activity,
+  ArrowUpRight,
+  CreditCard,
+  Globe,
+  Home,
+  Landmark,
+  LayoutDashboard,
+  Repeat,
+  Settings,
+  Shield,
+  Users,
+  Wallet,
+} from "lucide-react";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
-type Item = { href: string; label: string };
+type Item = { href: string; label: string; icon: ReactNode };
 
 export function AppShell({
   user,
@@ -17,77 +35,115 @@ export function AppShell({
   brand: string;
   children: ReactNode;
 }) {
+  const pathname = usePathname();
+  const home = brand === "Admin" ? "/admin" : "/app";
+  const mobile = items.slice(0, 5);
+
   return (
-    <div className="flex min-h-screen">
-      <aside className="hidden w-64 shrink-0 border-r border-line bg-navy-mid/70 p-5 md:block">
-        <a href={brand === "Admin" ? "/admin" : "/app"} className="mb-8 block">
-          <Logo />
-          <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-muted">{brand}</p>
+    <div className="flex min-h-screen bg-bg">
+      <aside className="hidden w-[88px] shrink-0 flex-col items-center border-r border-line bg-black/20 py-5 lg:flex xl:w-60 xl:items-stretch xl:px-4">
+        <a href={home} className="mb-8 flex justify-center xl:justify-start">
+          <span className="xl:hidden">
+            <Logo compact wordmark={false} />
+          </span>
+          <span className="hidden xl:block">
+            <Logo />
+          </span>
         </a>
-        <nav className="space-y-1">
-          {items.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              className="block rounded-xl px-3 py-2 text-sm text-muted hover:bg-white/5 hover:text-ink"
-            >
-              {item.label}
-            </a>
-          ))}
+        <nav className="flex flex-1 flex-col gap-1">
+          {items.map((item) => {
+            const active =
+              pathname === item.href || (item.href !== home && pathname.startsWith(item.href));
+            return (
+              <a
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm transition",
+                  active ? "bg-white/10 text-ink" : "text-muted hover:bg-white/5 hover:text-ink",
+                  "justify-center xl:justify-start",
+                )}
+              >
+                <span className="[&>svg]:h-[1.15rem] [&>svg]:w-[1.15rem]">{item.icon}</span>
+                <span className="hidden xl:inline">{item.label}</span>
+              </a>
+            );
+          })}
         </nav>
+        <form action={logoutAction} className="mt-4 hidden xl:block">
+          <button className="w-full rounded-2xl px-3 py-2 text-left text-sm text-muted hover:text-ink" type="submit">
+            Sign out
+          </button>
+        </form>
       </aside>
+
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-line px-4 py-3 md:px-8">
+        <header className="flex items-center justify-between px-4 pb-1 pt-4 md:px-8">
           <div className="flex items-center gap-3">
-            <Logo compact />
-            <div className="hidden text-sm text-muted md:block">
-              {user.name} · {user.email}
-            </div>
+            <span className="lg:hidden">
+              <Logo compact />
+            </span>
+            <p className="hidden text-sm text-muted md:block">{brand}</p>
           </div>
-          <form action={logoutAction}>
-            <button className="text-sm text-muted hover:text-ink" type="submit">
-              Sign out
-            </button>
-          </form>
+          <div className="flex items-center gap-3">
+            <div className="hidden text-right text-sm md:block">
+              <p className="font-medium text-ink">{user.name}</p>
+              <p className="text-xs text-muted">{user.email}</p>
+            </div>
+            <Avatar name={user.name} />
+          </div>
         </header>
-        <div className="flex gap-2 overflow-x-auto border-b border-line px-4 py-2 md:hidden">
-          {items.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              className={cn("whitespace-nowrap rounded-full border border-line px-3 py-1 text-xs")}
-            >
-              {item.label}
-            </a>
-          ))}
-        </div>
-        <main className="flex-1 px-4 py-8 md:px-8">{children}</main>
+        <main className="flex-1 px-4 pb-28 pt-4 md:px-8 lg:pb-10">{children}</main>
       </div>
+
+      <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-[#071422]/95 px-2 py-2 backdrop-blur lg:hidden">
+        <div className="mx-auto flex max-w-lg items-center justify-around">
+          {mobile.map((item) => {
+            const active =
+              pathname === item.href || (item.href !== home && pathname.startsWith(item.href));
+            return (
+              <a
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex min-w-[3.5rem] flex-col items-center gap-1 rounded-2xl px-2 py-1 text-[10px]",
+                  active ? "text-ink" : "text-muted",
+                )}
+              >
+                <span className={cn("grid h-8 w-8 place-items-center rounded-full", active && "bg-white/10")}>
+                  {item.icon}
+                </span>
+                {item.label}
+              </a>
+            );
+          })}
+        </div>
+      </nav>
     </div>
   );
 }
 
 export const customerNav: Item[] = [
-  { href: "/app", label: "Home" },
-  { href: "/app/wallet", label: "Wallet" },
-  { href: "/app/pay-in", label: "Add money" },
-  { href: "/app/send", label: "Send" },
-  { href: "/app/exchange", label: "Exchange" },
-  { href: "/app/accounts", label: "Global account" },
-  { href: "/app/cards", label: "Cards" },
-  { href: "/app/currencies", label: "Currencies" },
-  { href: "/app/fx", label: "FX & spread" },
-  { href: "/app/activity", label: "Activity" },
-  { href: "/app/profile", label: "Profile / KYC" },
+  { href: "/app", label: "Home", icon: <Home className="h-5 w-5" /> },
+  { href: "/app/wallet", label: "Accounts", icon: <Wallet className="h-5 w-5" /> },
+  { href: "/app/send", label: "Payments", icon: <ArrowUpRight className="h-5 w-5" /> },
+  { href: "/app/cards", label: "Cards", icon: <CreditCard className="h-5 w-5" /> },
+  { href: "/app/profile", label: "Profile", icon: <Users className="h-5 w-5" /> },
+  { href: "/app/pay-in", label: "Add money", icon: <Landmark className="h-5 w-5" /> },
+  { href: "/app/exchange", label: "Exchange", icon: <Repeat className="h-5 w-5" /> },
+  { href: "/app/accounts", label: "IBAN", icon: <Globe className="h-5 w-5" /> },
+  { href: "/app/currencies", label: "Markets", icon: <Activity className="h-5 w-5" /> },
+  { href: "/app/fx", label: "FX", icon: <Repeat className="h-5 w-5" /> },
+  { href: "/app/activity", label: "Activity", icon: <Activity className="h-5 w-5" /> },
 ];
 
 export const adminNav: Item[] = [
-  { href: "/admin", label: "Dashboard" },
-  { href: "/admin/users", label: "Users" },
-  { href: "/admin/kyc", label: "KYC / Cases" },
-  { href: "/admin/transactions", label: "Transactions" },
-  { href: "/admin/rails", label: "Pay-ins / Payouts" },
-  { href: "/admin/fx", label: "FX controls" },
-  { href: "/admin/audit", label: "Audit" },
-  { href: "/admin/settings", label: "Settings" },
+  { href: "/admin", label: "Home", icon: <LayoutDashboard className="h-5 w-5" /> },
+  { href: "/admin/users", label: "Users", icon: <Users className="h-5 w-5" /> },
+  { href: "/admin/kyc", label: "KYC", icon: <Shield className="h-5 w-5" /> },
+  { href: "/admin/transactions", label: "Ledger", icon: <Activity className="h-5 w-5" /> },
+  { href: "/admin/rails", label: "Rails", icon: <ArrowUpRight className="h-5 w-5" /> },
+  { href: "/admin/fx", label: "FX", icon: <Repeat className="h-5 w-5" /> },
+  { href: "/admin/audit", label: "Audit", icon: <Shield className="h-5 w-5" /> },
+  { href: "/admin/settings", label: "Settings", icon: <Settings className="h-5 w-5" /> },
 ];

@@ -1,4 +1,5 @@
-import { Badge, PageHeader } from "@/components/ui";
+import { Badge } from "@/components/ui";
+import { MetalCard } from "@/components/money-ui";
 import { requireSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 
@@ -7,34 +8,34 @@ export default async function CardsPage() {
   const cards = await prisma.card.findMany({ where: { userId: session.id } });
 
   return (
-    <div>
-      <PageHeader
-        eyebrow="Cards"
-        title="Issue a card and spend crypto"
-        description="Phase 3 stub. Sibtech is the program-manager UX and ledger. A BIN sponsor issues the card. Convert-at-spend can pull USDT or BTC through AFIX at the configured spread."
-      />
-      <div className="grid gap-4 md:grid-cols-2">
+    <div className="mx-auto max-w-lg">
+      <h1 className="text-3xl font-semibold tracking-tight">Cards</h1>
+      <p className="mt-2 text-sm text-muted">
+        Spend from wallet or crypto. Convert-at-spend uses AFIX at your spread.
+      </p>
+      <div className="mt-8 space-y-6">
         {cards.map((c) => (
-          <article
-            key={c.id}
-            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-navy-lift to-teal-deep p-6 text-white"
-          >
-            <p className="text-xs uppercase tracking-[0.2em] text-white/70">Sibtech {c.kind}</p>
-            <p className="mt-10 font-mono text-2xl tracking-[0.2em]">•••• {c.last4}</p>
-            <div className="mt-8 flex items-center justify-between text-sm">
-              <span>{c.brand}</span>
-              <Badge tone="warn">{c.status}</Badge>
+          <div key={c.id}>
+            <MetalCard last4={c.last4} brand={c.brand} kind={c.kind} spendFrom={c.spendFromCurrency} />
+            <div className="mt-4 flex items-center justify-between px-1 text-sm">
+              <span className="text-muted">
+                {c.cryptoSpendEnabled ? "Crypto spend on" : "Fiat only"}
+              </span>
+              <Badge tone={c.status === "ACTIVE" ? "ok" : "warn"}>{c.status}</Badge>
             </div>
-            <p className="mt-3 text-xs text-white/80">
-              Spend from {c.spendFromCurrency}
-              {c.cryptoSpendEnabled ? " · crypto spend enabled" : ""}
-            </p>
-          </article>
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              {["Freeze", "PIN", "Limits", "Replace"].map((action) => (
+                <button
+                  key={action}
+                  type="button"
+                  className="rounded-2xl bg-white/[0.05] py-3 text-sm font-medium"
+                >
+                  {action}
+                </button>
+              ))}
+            </div>
+          </div>
         ))}
-        <article className="card hairline p-6 text-sm text-muted">
-          Physical cards, 3DS, and spend controls land after a BIN sponsor is selected.
-          This page is a real product surface — not a placeholder tile.
-        </article>
       </div>
     </div>
   );

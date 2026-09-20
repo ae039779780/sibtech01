@@ -1,90 +1,109 @@
-import { Badge, Button, PageHeader, Stat } from "@/components/ui";
+import { Badge } from "@/components/ui";
+import {
+  AccountRow,
+  MetalCard,
+  QuickAction,
+  SectionLabel,
+  TxRow,
+} from "@/components/money-ui";
 import { requireSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
-import { displayAmount, displayDate, kycTone } from "@/lib/format";
-import { getWalletOverview } from "@/lib/services/wallets";
+import { currencyPrefix, displayDate, displayFigure, kycTone } from "@/lib/format";
 import { t } from "@/lib/i18n";
+import { getWalletOverview } from "@/lib/services/wallets";
+import { ArrowUpRight, CreditCard, Plus, Repeat } from "lucide-react";
 
 export default async function CustomerHome() {
   const session = await requireSession();
   const copy = t();
-  const [balances, payments, user] = await Promise.all([
+  const [balances, payments, user, card] = await Promise.all([
     getWalletOverview(session.id),
     prisma.payment.findMany({
       where: { userId: session.id },
+      include: { beneficiary: true },
       orderBy: { createdAt: "desc" },
-      take: 5,
+      take: 6,
     }),
     prisma.user.findUniqueOrThrow({ where: { id: session.id } }),
+    prisma.card.findFirst({ where: { userId: session.id } }),
   ]);
   const cad = balances.find((b) => b.account.currency === "CAD");
+  const first = session.name.split(" ")[0];
 
   return (
-    <div>
-      <PageHeader
-        eyebrow="Home"
-        title={`Good day, ${session.name.split(" ")[0]}`}
-        description="Canadian-licensed wallet with global rails. Phase 1 money movement is live; later modules have real stub surfaces."
-        actions={<Button href="/app/pay-in">Add money</Button>}
-      />
-
-      <div className="mb-6 rounded-2xl border border-line bg-navy-lift/40 p-4 text-sm">
-        <span className="mr-2 text-muted">KYC status</span>
+    <div className="mx-auto max-w-lg lg:max-w-none">
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-sm text-muted">Good afternoon</p>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight">{first}</h1>
+        </div>
         <Badge tone={kycTone(user.kycStatus) as "ok"}>
           {copy.kyc[user.kycStatus as keyof typeof copy.kyc] ?? user.kycStatus}
         </Badge>
-        <span className="ml-3 text-muted">Tier {user.kycTier}</span>
-        {user.kycStatus !== "APPROVED" ? (
-          <a href="/app/profile" className="ml-4 text-teal">
-            Continue verification
-          </a>
-        ) : null}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Stat
-          label="Available CAD"
-          value={cad ? displayAmount(cad.availableMinor, "CAD") : "0.00 CAD"}
-          hint={cad && cad.heldMinor > 0n ? `${displayAmount(cad.heldMinor, "CAD")} on hold` : "No open holds"}
-        />
-        <Stat label="Open wallets" value={String(balances.length)} hint="Fiat + crypto books" />
-        <Stat label="Recent transfers" value={String(payments.length)} hint="Pay-in and payout" />
+      <div className="mt-8 text-center lg:text-left">
+        <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted">Accounts</p>
+        <p className="mt-3 text-[3.35rem] font-semibold leading-none tracking-tight tabular-nums md:text-7xl">
+          {currencyPrefix("CAD")}
+          {cad ? displayFigure(cad.availableMinor, "CAD") : "0.00"}
+        </p>
+        <p className="mt-3 text-sm text-muted">Canadian dollars · available to spend</p>
       </div>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <section className="card hairline p-6">
-          <h2 className="font-medium">Balances</h2>
-          <ul className="mt-4 space-y-3">
+      <div className="mt-8 flex justify-center gap-5 lg:justify-start">
+        <QuickAction href="/app/pay-in" label="Add money" icon={<Plus className="h-6 w-6" />} />
+        <QuickAction href="/app/send" label="Send" icon={<ArrowUpRight className="h-6 w-6" />} />
+        <QuickAction href="/app/exchange" label="Exchange" icon={<Repeat className="h-6 w-6" />} />
+        <QuickAction href="/app/cards" label="Cards" icon={<CreditCard className="h-6 w-6" />} />
+      </div>
+
+      <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,380px)_1fr]">
+        <div>
+          {card ? (
+            <a href="/app/cards" className="block">
+              <MetalCard
+                last4={card.last4}
+                brand={card.brand}
+                kind={card.kind}
+                spendFrom={card.spendFromCurrency}
+              />
+            </a>
+          ) : null}
+        </div>
+        <div>
+          <SectionLabel href="/app/wallet">Accounts</SectionLabel>
+          <div className="divide-y divide-line">
             {balances.map((b) => (
-              <li key={b.account.id} className="flex items-center justify-between text-sm">
-                <span className="text-muted">{b.account.currency}</span>
-                <span className="font-mono">{displayAmount(b.availableMinor, b.account.currency)}</span>
-              </li>
+              <AccountRow
+                key={b.account.id}
+                code={b.account.currency}
+                name={b.account.currency === "BTC" ? "Bitcoin" : `${b.account.currency} account`}
+                minor={b.availableMinor}
+                href="/app/wallet"
+              />
             ))}
-          </ul>
-          <Button href="/app/wallet" variant="ghost" className="mt-5">
-            Open wallet
-          </Button>
-        </section>
-        <section className="card hairline p-6">
-          <h2 className="font-medium">Activity</h2>
-          <ul className="mt-4 space-y-3 text-sm">
-            {payments.map((p) => (
-              <li key={p.id} className="flex items-center justify-between gap-3">
-                <div>
-                  <p>
-                    {p.direction} · {p.method}
-                  </p>
-                  <p className="text-xs text-muted">{displayDate(p.createdAt)}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-mono">{displayAmount(p.amountMinor, p.currency)}</p>
-                  <Badge tone={p.status === "SETTLED" ? "ok" : "warn"}>{p.status}</Badge>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-10">
+        <SectionLabel href="/app/activity">Transactions</SectionLabel>
+        <div className="divide-y divide-line">
+          {payments.map((p) => (
+            <TxRow
+              key={p.id}
+              title={
+                p.beneficiary?.name ??
+                (p.direction === "PAYIN" ? "Added money" : p.description)
+              }
+              subtitle={`${p.method === "SWIFT" ? "International" : p.method === "CRYPTO" ? "Crypto" : "Local"} · ${displayDate(p.createdAt)}`}
+              amount={p.amountMinor}
+              currency={p.currency}
+              inbound={p.direction === "PAYIN"}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

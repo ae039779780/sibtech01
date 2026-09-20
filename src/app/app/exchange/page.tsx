@@ -1,5 +1,5 @@
 import { exchangeAction } from "@/app/actions/customer";
-import { Button, Field, PageHeader } from "@/components/ui";
+import { Button, Field } from "@/components/ui";
 import { requireSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { displayAmount } from "@/lib/format";
@@ -15,36 +15,34 @@ export default async function ExchangePage() {
   });
 
   return (
-    <div>
-      <PageHeader
-        eyebrow="Exchange"
-        title="Convert at an AFIX quote"
-        description="Phase 2 surface, wired to the same ledger. Customer rate is mid minus half the configured spread."
-      />
-      <div className="grid gap-6 lg:grid-cols-2">
-        <form action={exchangeAction} className="card hairline space-y-4 p-6">
-          <Field label="Sell amount" name="amount" defaultValue="200.00" required />
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="From" name="fromCurrency" defaultValue="CAD" />
-            <Field label="To" name="toCurrency" defaultValue="USD" />
-          </div>
-          <p className="text-sm text-muted">
-            Sample 1,000 CAD → USD mid {quote.midRate.toFixed(4)} · client{" "}
-            {quote.clientRate.toFixed(4)} · spread {quote.spreadBps} bps
-          </p>
-          <Button type="submit">Confirm conversion</Button>
-        </form>
-        <div className="card hairline p-6 text-sm text-muted">
-          Liquidity is a demo book versus CAD. Production will quote through the
-          chosen rails/crypto partner. Travel-rule fields attach when the
-          destination is a VASP.
+    <div className="mx-auto max-w-lg">
+      <h1 className="text-3xl font-semibold tracking-tight">Exchange</h1>
+      <p className="mt-2 text-sm text-muted">
+        Live AFIX quote. You get mid minus half the spread — currently {quote.spreadBps} bps.
+      </p>
+      <form action={exchangeAction} className="mt-8 space-y-5 rounded-[1.6rem] bg-white/[0.04] p-5">
+        <Field label="You send" name="amount" defaultValue="25.00" required />
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="From" name="fromCurrency" defaultValue="CAD" />
+          <Field label="To" name="toCurrency" defaultValue="USD" />
         </div>
-      </div>
-      <ul className="mt-8 space-y-3">
+        <div className="rounded-2xl bg-black/25 p-4 text-sm">
+          <p className="text-muted">Indicative 1,000 CAD → USD</p>
+          <p className="mt-1 text-lg font-semibold tabular-nums">{quote.clientRate.toFixed(4)}</p>
+        </div>
+        <Button type="submit" className="h-12 w-full text-base">
+          Exchange
+        </Button>
+      </form>
+      <ul className="mt-8 space-y-2">
         {history.map((q) => (
-          <li key={q.id} className="card hairline p-4 text-sm">
-            {q.baseCurrency}→{q.quoteCurrency} · {displayAmount(q.amountMinor, q.baseCurrency)} at{" "}
-            {Number(q.clientRate).toFixed(6)} ({q.spreadBps} bps)
+          <li key={q.id} className="flex justify-between rounded-2xl bg-white/[0.03] px-4 py-3 text-sm">
+            <span>
+              {q.baseCurrency} → {q.quoteCurrency}
+            </span>
+            <span className="tabular-nums text-muted">
+              {displayAmount(q.amountMinor, q.baseCurrency)}
+            </span>
           </li>
         ))}
       </ul>

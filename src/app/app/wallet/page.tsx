@@ -1,4 +1,4 @@
-import { PageHeader } from "@/components/ui";
+import { AccountRow, SectionLabel } from "@/components/money-ui";
 import { requireSession } from "@/lib/auth/session";
 import { displayAmount } from "@/lib/format";
 import { getWalletOverview } from "@/lib/services/wallets";
@@ -12,52 +12,40 @@ export default async function WalletPage() {
       where: {
         lines: { some: { account: { ownerUserId: session.id } } },
       },
-      include: { lines: { include: { account: true } } },
       orderBy: { createdAt: "desc" },
-      take: 20,
+      take: 12,
     }),
   ]);
 
   return (
-    <div>
-      <PageHeader
-        eyebrow="Wallet"
-        title="Multi-asset ledger balances"
-        description="Posted amounts come from immutable journal entries. Holds reduce what you can send."
-      />
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <div className="mx-auto max-w-lg lg:max-w-3xl">
+      <h1 className="text-3xl font-semibold tracking-tight">Accounts</h1>
+      <p className="mt-2 text-sm text-muted">Every currency sits on the Sibtech ledger. Holds come off what you can send.</p>
+      <div className="mt-6 divide-y divide-line rounded-[1.6rem] bg-white/[0.03] px-3 py-2">
         {balances.map((b) => (
-          <article key={b.account.id} className="card hairline p-5">
-            <p className="text-xs uppercase tracking-wide text-muted">{b.account.currency}</p>
-            <p className="mt-2 font-mono text-2xl">{displayAmount(b.availableMinor, b.account.currency)}</p>
-            <p className="mt-2 text-xs text-muted">
-              Posted {displayAmount(b.postedMinor, b.account.currency)} · Held{" "}
-              {displayAmount(b.heldMinor, b.account.currency)}
-            </p>
-          </article>
+          <AccountRow
+            key={b.account.id}
+            code={b.account.currency}
+            name={
+              b.heldMinor > 0n
+                ? `${displayAmount(b.heldMinor, b.account.currency)} on hold`
+                : `${b.account.currency} account`
+            }
+            minor={b.availableMinor}
+          />
         ))}
       </div>
-      <section className="card hairline mt-8 overflow-hidden">
-        <div className="border-b border-line px-5 py-4 font-medium">Statement</div>
-        <table className="w-full text-left text-sm">
-          <thead className="text-xs uppercase text-muted">
-            <tr>
-              <th className="px-5 py-3">Type</th>
-              <th>Description</th>
-              <th>Correlation</th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map((e) => (
-              <tr key={e.id} className="border-t border-line">
-                <td className="px-5 py-3 font-mono text-xs">{e.type}</td>
-                <td>{e.description}</td>
-                <td className="font-mono text-xs text-muted">{e.correlationId}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+      <div className="mt-10">
+        <SectionLabel>Statement</SectionLabel>
+        <ul className="space-y-2">
+          {entries.map((e) => (
+            <li key={e.id} className="rounded-2xl bg-white/[0.03] px-4 py-3">
+              <p className="text-sm font-medium">{e.description}</p>
+              <p className="text-xs text-muted">{e.type}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

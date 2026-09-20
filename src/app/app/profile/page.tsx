@@ -1,5 +1,5 @@
 import { submitKycAction } from "@/app/actions/customer";
-import { Badge, Button, Field, PageHeader } from "@/components/ui";
+import { Badge, Button, Field } from "@/components/ui";
 import { requireSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { kycTone } from "@/lib/format";
@@ -12,13 +12,10 @@ export default async function ProfilePage() {
   });
 
   return (
-    <div>
-      <PageHeader
-        eyebrow="Profile"
-        title="Identity & KYC"
-        description="Onboarding follows Canadian MSB / money-services expectations: identity, address, occupation, and source of funds. IDV vendor is still a partner decision."
-      />
-      <div className="mb-6">
+    <div className="mx-auto max-w-lg">
+      <h1 className="text-3xl font-semibold tracking-tight">Profile</h1>
+      <p className="mt-2 text-sm text-muted">Identity for the Canadian license. IDV is a partner in production.</p>
+      <div className="mb-6 mt-5">
         <Badge tone={kycTone(user.kycStatus) as "ok"}>{user.kycStatus}</Badge>
         <span className="ml-3 text-sm text-muted">
           {user.country} · tier {user.kycTier}
