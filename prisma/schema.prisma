@@ -1,0 +1,223 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         String
+  kycStatus    String
+  kycTier      Int      @default(0)
+  country      String   @default("CA")
+  frozen       Boolean  @default(false)
+  phone        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  kycProfile     KycProfile?
+  beneficiaries  Beneficiary[]
+  payments       Payment[]
+  cards          Card[]
+  globalAccounts GlobalAccount[]
+  auditLogs      AuditLog[]
+}
+
+model KycProfile {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  legalName       String
+  dateOfBirth     String
+  addressLine1    String
+  city            String
+  region          String
+  postalCode      String
+  country         String
+  occupation      String?
+  sourceOfFunds   String?
+  notes           String?
+  submittedAt     DateTime?
+  reviewedAt      DateTime?
+  reviewedById    String?
+  decisionReason  String?
+}
+
+model LedgerAccount {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  type        String
+  currency    String
+  ownerUserId String?
+  createdAt   DateTime @default(now())
+
+  lines JournalLine[]
+  holds Hold[]
+}
+
+model JournalEntry {
+  id            String   @id @default(cuid())
+  correlationId String
+  type          String
+  description   String
+  metadata      String   @default("{}")
+  createdById   String?
+  reversesId    String?
+  createdAt     DateTime @default(now())
+
+  lines JournalLine[]
+  holds Hold[]
+
+  @@index([correlationId])
+  @@index([createdAt])
+}
+
+model JournalLine {
+  id          String        @id @default(cuid())
+  entryId     String
+  entry       JournalEntry  @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  accountId   String
+  account     LedgerAccount @relation(fields: [accountId], references: [id])
+  direction   String
+  amountMinor String
+  currency    String
+
+  @@index([accountId])
+}
+
+model Hold {
+  id             String        @id @default(cuid())
+  accountId      String
+  account        LedgerAccount @relation(fields: [accountId], references: [id])
+  amountMinor    String
+  currency       String
+  reason         String
+  status         String
+  paymentId      String?
+  journalEntryId String?
+  journalEntry   JournalEntry? @relation(fields: [journalEntryId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([accountId, status])
+}
+
+model Beneficiary {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  type          String
+  currency      String
+  country       String
+  accountNumber String?
+  iban          String?
+  swiftBic      String?
+  bankName      String?
+  cryptoNetwork String?
+  cryptoAddress String?
+  createdAt     DateTime  @default(now())
+  payments      Payment[]
+}
+
+model Payment {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  direction      String
+  method         String
+  amountMinor    String
+  currency       String
+  status         String
+  railsPartner   String
+  railsRef       String?
+  railsCorridor  String?
+  idempotencyKey String       @unique
+  beneficiaryId  String?
+  beneficiary    Beneficiary? @relation(fields: [beneficiaryId], references: [id])
+  journalEntryId String?
+  holdId         String?
+  description    String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([status])
+}
+
+model GlobalAccount {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currency      String
+  country       String
+  accountNumber String
+  iban          String?
+  bankName      String
+  routing       String?
+  partner       String
+  status        String
+  createdAt     DateTime @default(now())
+}
+
+model Card {
+  id                 String   @id @default(cuid())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  last4              String
+  brand              String
+  kind               String
+  status             String
+  spendFromCurrency  String
+  cryptoSpendEnabled Boolean  @default(true)
+  createdAt          DateTime @default(now())
+}
+
+model FxSpread {
+  id        String   @id @default(cuid())
+  pair      String   @unique
+  spreadBps Int
+  active    Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+}
+
+model FxQuote {
+  id           String   @id @default(cuid())
+  userId       String?
+  baseCurrency String
+  quoteCurrency String
+  side         String
+  midRate      String
+  spreadBps    Int
+  clientRate   String
+  amountMinor  String
+  resultMinor  String
+  createdAt    DateTime @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id])
+  action     String
+  entityType String
+  entityId   String
+  payload    String   @default("{}")
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model Setting {
+  key   String @id
+  value String
+}
