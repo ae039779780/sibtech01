@@ -90,7 +90,9 @@ export class PrismaLedgerStore implements LedgerStore {
           correlationId: entry.correlationId,
           type: entry.type,
           description: entry.description,
-          metadata: JSON.stringify(entry.metadata ?? {}),
+          metadata: JSON.stringify(entry.metadata ?? {}, (_key, value) =>
+            typeof value === "bigint" ? value.toString() : value,
+          ),
           createdById: entry.createdById ?? null,
           reversesId: entry.reversesId ?? null,
           createdAt: entry.createdAt,

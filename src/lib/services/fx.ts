@@ -48,7 +48,14 @@ export async function executeExchange(input: {
     type: "FX",
     description: `AFIX convert ${quote.pair} @ ${quote.clientRate.toFixed(6)}`,
     createdById: user.id,
-    metadata: { quote, spreadBps: quote.spreadBps },
+    metadata: {
+      spreadBps: quote.spreadBps,
+      pair: quote.pair,
+      midRate: quote.midRate,
+      clientRate: quote.clientRate,
+      amountMinor: quote.amountMinor.toString(),
+      resultMinor: quote.resultMinor.toString(),
+    },
     lines: [
       {
         accountCode: customerWalletCode(user.id, input.fromCurrency),

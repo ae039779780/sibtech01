@@ -16,6 +16,8 @@ export default async function SendPage() {
       orderBy: { createdAt: "desc" },
     }),
   ]);
+  const preferred =
+    beneficiaries.find((b) => b.type === "SWIFT") ?? beneficiaries[0];
 
   return (
     <div>
@@ -30,7 +32,7 @@ export default async function SendPage() {
           <Field label="Currency" name="currency">
             <select
               name="currency"
-              defaultValue="CAD"
+              defaultValue="EUR"
               className="w-full rounded-xl border border-line bg-navy-lift/40 px-3 py-2 text-sm"
             >
               {["CAD", "USD", "EUR", "GBP", "USDT", "BTC"].map((c) => (
@@ -53,6 +55,7 @@ export default async function SendPage() {
             <select
               name="beneficiaryId"
               required
+              defaultValue={preferred?.id}
               className="w-full rounded-xl border border-line bg-navy-lift/40 px-3 py-2 text-sm"
             >
               {beneficiaries.map((b) => (
