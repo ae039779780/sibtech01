@@ -1,5 +1,6 @@
 import { jwtVerify } from "jose";
 import { NextRequest, NextResponse } from "next/server";
+import { isStaffRole } from "@/lib/auth/permissions";
 import { SESSION_COOKIE } from "@/lib/auth/session";
 
 function secret() {
@@ -24,11 +25,13 @@ export async function proxy(request: NextRequest) {
   const login = new URL("/login", request.url);
   login.searchParams.set("next", pathname);
 
-  if (pathname.startsWith("/app") && !role) {
-    return NextResponse.redirect(login);
+  if (pathname.startsWith("/app")) {
+    if (!role) return NextResponse.redirect(login);
+    if (isStaffRole(role)) return NextResponse.redirect(new URL("/admin", request.url));
   }
-  if (pathname.startsWith("/admin") && role !== "ADMIN" && role !== "COMPLIANCE") {
-    return NextResponse.redirect(role ? new URL("/app", request.url) : login);
+  if (pathname.startsWith("/admin")) {
+    if (!role) return NextResponse.redirect(login);
+    if (!isStaffRole(role)) return NextResponse.redirect(new URL("/app", request.url));
   }
   return NextResponse.next();
 }

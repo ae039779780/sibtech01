@@ -3,27 +3,14 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
-import { clearSessionCookie, setSessionCookie } from "@/lib/auth/session";
+import {
+  clearSessionCookie,
+  setSessionCookie,
+  toSessionUser,
+} from "@/lib/auth/session";
+import { isStaffRole, parseAccountKind } from "@/lib/auth/permissions";
 import { writeAudit } from "@/lib/audit";
 import { ensureCustomerWallets } from "@/lib/services/wallets";
-
-function toSession(user: {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-  kycStatus: string;
-  kycTier: number;
-}) {
-  return {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    role: user.role as "CUSTOMER" | "ADMIN" | "COMPLIANCE",
-    kycStatus: user.kycStatus,
-    kycTier: user.kycTier,
-  };
-}
 
 export async function loginAction(formData: FormData) {
   const email = String(formData.get("email") ?? "")
@@ -34,14 +21,14 @@ export async function loginAction(formData: FormData) {
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
     redirect("/login?error=invalid");
   }
-  await setSessionCookie(toSession(user));
+  await setSessionCookie(toSessionUser(user));
   await writeAudit({
     actorId: user.id,
     action: "auth.login",
     entityType: "User",
     entityId: user.id,
   });
-  redirect(user.role === "CUSTOMER" ? "/app" : "/admin");
+  redirect(isStaffRole(user.role) ? "/admin" : "/app");
 }
 
 export async function registerAction(formData: FormData) {
@@ -50,6 +37,8 @@ export async function registerAction(formData: FormData) {
     .trim()
     .toLowerCase();
   const password = String(formData.get("password") ?? "");
+  const accountKind = parseAccountKind(formData.get("accountKind"));
+  const cryptoFriendly = String(formData.get("cryptoFriendly") ?? "") === "on";
   if (!name || !email || password.length < 8) {
     redirect("/register?error=invalid");
   }
@@ -66,15 +55,18 @@ export async function registerAction(formData: FormData) {
       kycStatus: "UNSTARTED",
       kycTier: 0,
       country: "CA",
+      accountKind,
+      cryptoFriendly,
     },
   });
   await ensureCustomerWallets(user.id, user.name);
-  await setSessionCookie(toSession(user));
+  await setSessionCookie(toSessionUser(user));
   await writeAudit({
     actorId: user.id,
     action: "auth.register",
     entityType: "User",
     entityId: user.id,
+    payload: { accountKind, cryptoFriendly },
   });
   redirect("/app/profile");
 }

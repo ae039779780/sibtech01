@@ -13,7 +13,7 @@ export default async function AdminAuditPage() {
       <PageHeader
         eyebrow="Audit"
         title="Action log"
-        description="Admin and API actions for exams. History is append-only."
+        description="Append-only actions. Demo audit trail — not a live-bank exam pack."
       />
       <div className="overflow-hidden rounded-2xl border border-line">
         <table className="w-full text-left text-sm">

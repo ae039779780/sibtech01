@@ -4,6 +4,10 @@
 **Primary surface:** Website (customer + admin) — base for the whole product  
 **Updated:** 2026-09-20
 
+## Demo vs north star
+
+The Phase 1 website is **demo-complete, not a live bank**: four seeded types (Retail + crypto flag, Admin, Compliance, Support), RailsPartner Thunes/Terra **stubs**, catalog UI instead of 90 live rails. Do not wire live vendors for the architecture walkthrough.
+
 ## Must cover
 
 1. **Website** — primary product surface (not app-only)

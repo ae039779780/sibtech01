@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
-import { AppShell, customerNav } from "@/components/shells";
+import { AppShell, customerNavFor } from "@/components/shells";
 import { requireSession } from "@/lib/auth/session";
 
 export default async function CustomerLayout({ children }: { children: ReactNode }) {
   const user = await requireSession();
   return (
-    <AppShell user={user} items={customerNav} brand="Customer">
+    <AppShell user={user} items={customerNavFor(user)} brand="Retail">
       {children}
     </AppShell>
   );

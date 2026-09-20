@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui";
+import { Badge, DemoNote } from "@/components/ui";
 import { MetalCard } from "@/components/money-ui";
 import { requireSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
@@ -13,13 +13,14 @@ export default async function CardsPage() {
       <p className="mt-2 text-sm text-muted">
         Spend from wallet or crypto. Convert-at-spend uses AFIX at your spread.
       </p>
+      <DemoNote>Card BIN, issuance, PIN, and freeze are partner slots. UI only.</DemoNote>
       <div className="mt-8 space-y-6">
         {cards.map((c) => (
           <div key={c.id}>
             <MetalCard last4={c.last4} brand={c.brand} kind={c.kind} spendFrom={c.spendFromCurrency} />
             <div className="mt-4 flex items-center justify-between px-1 text-sm">
               <span className="text-muted">
-                {c.cryptoSpendEnabled ? "Crypto spend on" : "Fiat only"}
+                {session.cryptoFriendly && c.cryptoSpendEnabled ? "Crypto spend on (DEMO)" : "Fiat only"}
               </span>
               <Badge tone={c.status === "ACTIVE" ? "ok" : "warn"}>{c.status}</Badge>
             </div>

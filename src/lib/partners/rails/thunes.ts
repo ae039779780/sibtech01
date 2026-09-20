@@ -8,9 +8,9 @@ import type {
 
 export class ThunesRailsPartner implements RailsPartner {
   readonly id = "thunes" as const;
-  readonly displayName = "Thunes";
+  readonly displayName = "Thunes (DEMO stub)";
   readonly settlementModel =
-    "Sibtech remains the Canadian-licensed principal; Thunes is the global pay-in/payout rail (local + cross-border). Wallet, ledger, KYC, and FX stay in Sibtech software.";
+    "DEMO — no live vendor calls. Sibtech remains the Canadian-licensed principal; this Thunes adapter is a labeled stub for local, SWIFT-like, and crypto corridors. Wallet, ledger, KYC, and FX stay in Sibtech software.";
 
   async listCorridors() {
     return SHARED_CORRIDORS;

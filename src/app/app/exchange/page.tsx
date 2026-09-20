@@ -1,5 +1,5 @@
 import { exchangeAction } from "@/app/actions/customer";
-import { Button, Field } from "@/components/ui";
+import { Button, DemoNote, Field } from "@/components/ui";
 import { requireSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { displayAmount } from "@/lib/format";
@@ -20,6 +20,7 @@ export default async function ExchangePage() {
       <p className="mt-2 text-sm text-muted">
         Live AFIX quote. You get mid minus half the spread — currently {quote.spreadBps} bps.
       </p>
+      <DemoNote>In-app book and spread. Not a live FX venue.</DemoNote>
       <form action={exchangeAction} className="mt-8 space-y-5 rounded-[1.6rem] bg-white/[0.04] p-5">
         <Field label="You send" name="amount" defaultValue="25.00" required />
         <div className="grid grid-cols-2 gap-3">

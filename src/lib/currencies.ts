@@ -123,3 +123,12 @@ export function currencyDecimals(code: string): number {
 }
 
 export const WALLET_DEFAULTS: string[] = ["CAD", "USD", "EUR", "GBP", "USDT", "BTC"];
+export const FIAT_WALLET_DEFAULTS: string[] = ["CAD", "USD", "EUR", "GBP"];
+
+export function isCryptoCode(code: string): boolean {
+  return getCurrency(code).class === "crypto";
+}
+
+export function walletCodesFor(cryptoFriendly: boolean): string[] {
+  return cryptoFriendly ? [...WALLET_DEFAULTS] : [...FIAT_WALLET_DEFAULTS];
+}

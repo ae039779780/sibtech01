@@ -1,4 +1,4 @@
-import { PageHeader } from "@/components/ui";
+import { DemoNote, PageHeader } from "@/components/ui";
 import { prisma } from "@/lib/db";
 import { midRate, quoteFx } from "@/lib/fx/engine";
 
@@ -22,6 +22,7 @@ export default async function FxPage() {
         title="AFIX engine"
         description="Configurable spread in basis points. Admin can change pairs without touching customer UX. Mid rates are a demo book versus CAD."
       />
+      <DemoNote>Indicative book only. No live FX venue or 90-rail liquidity.</DemoNote>
       <div className="card hairline mb-6 p-5 text-sm">
         Default spread <span className="font-mono text-teal">{defaultBps} bps</span>
       </div>

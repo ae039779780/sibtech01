@@ -1,5 +1,5 @@
 import { addBeneficiaryAction, createPayoutAction } from "@/app/actions/customer";
-import { Button, Field } from "@/components/ui";
+import { Button, DemoNote, Field } from "@/components/ui";
 import { TxRow } from "@/components/money-ui";
 import { requireSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
@@ -19,13 +19,20 @@ export default async function SendPage() {
       take: 8,
     }),
   ]);
+  const visibleBeneficiaries = session.cryptoFriendly
+    ? beneficiaries
+    : beneficiaries.filter((b) => b.type !== "CRYPTO");
   const preferred =
-    beneficiaries.find((b) => b.type === "SWIFT") ?? beneficiaries[0];
+    visibleBeneficiaries.find((b) => b.type === "SWIFT") ?? visibleBeneficiaries[0];
+  const sendCurrencies = session.cryptoFriendly
+    ? ["CAD", "USD", "EUR", "GBP", "USDT", "BTC"]
+    : ["CAD", "USD", "EUR", "GBP"];
 
   return (
     <div className="mx-auto max-w-lg">
       <h1 className="text-3xl font-semibold tracking-tight">Send</h1>
-      <p className="mt-2 text-sm text-muted">Local, SWIFT, or crypto — same wallet, partner rails underneath.</p>
+      <p className="mt-2 text-sm text-muted">Local, SWIFT-like stub, or crypto — same wallet, partner rails underneath.</p>
+      <DemoNote>International payouts use a SWIFT-like RailsPartner stub. No live correspondent.</DemoNote>
 
       <form action={createPayoutAction} className="mt-8 space-y-5">
         <label className="block text-center">
@@ -44,7 +51,7 @@ export default async function SendPage() {
               defaultValue="EUR"
               className="w-full rounded-2xl border-0 bg-white/[0.06] px-3 py-3 text-sm"
             >
-              {["CAD", "USD", "EUR", "GBP", "USDT", "BTC"].map((c) => (
+              {sendCurrencies.map((c) => (
                 <option key={c}>{c}</option>
               ))}
             </select>
@@ -55,9 +62,9 @@ export default async function SendPage() {
               defaultValue="SWIFT"
               className="w-full rounded-2xl border-0 bg-white/[0.06] px-3 py-3 text-sm"
             >
-              <option value="SWIFT">International</option>
+              <option value="SWIFT">International (SWIFT-like DEMO)</option>
               <option value="LOCAL">Local</option>
-              <option value="CRYPTO">Crypto</option>
+              {session.cryptoFriendly ? <option value="CRYPTO">Crypto</option> : null}
             </select>
           </Field>
         </div>
@@ -68,7 +75,7 @@ export default async function SendPage() {
             defaultValue={preferred?.id}
             className="w-full rounded-2xl border-0 bg-white/[0.06] px-3 py-3 text-sm"
           >
-            {beneficiaries.map((b) => (
+            {visibleBeneficiaries.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.name}
               </option>
@@ -88,7 +95,7 @@ export default async function SendPage() {
             <select name="type" className="w-full rounded-2xl border-0 bg-white/[0.06] px-3 py-3 text-sm">
               <option>LOCAL</option>
               <option>SWIFT</option>
-              <option>CRYPTO</option>
+              {session.cryptoFriendly ? <option>CRYPTO</option> : null}
             </select>
           </Field>
           <Field label="Currency" name="currency" defaultValue="EUR" />

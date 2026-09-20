@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui";
+import { Badge, DemoNote } from "@/components/ui";
 import { requireSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 
@@ -14,6 +14,7 @@ export default async function AccountsPage() {
       <p className="mt-2 text-sm text-muted">
         Local details for inbound pay-in. Issued by a partner EMI when contracted.
       </p>
+      <DemoNote>IBAN / local account numbers are sandbox placeholders. No live EMI.</DemoNote>
       <div className="mt-8 space-y-4">
         {accounts.map((a) => (
           <article key={a.id} className="rounded-[1.5rem] bg-white/[0.04] p-5">

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { writeAudit } from "@/lib/audit";
 import { KYC_LIMITS, railsPartnerId } from "@/lib/config";
+import { isCryptoCode } from "@/lib/currencies";
 import { appLedger, customerWalletCode, partnerNostroCode } from "@/lib/ledger";
 import { getConfiguredRailsPartner } from "@/lib/partners/rails";
 import type { RailKind } from "@/lib/partners/rails/types";
@@ -11,6 +12,23 @@ function dailyLimit(tier: number): bigint {
   if (tier >= 2) return KYC_LIMITS[2].dailyPayoutMinor;
   if (tier === 1) return KYC_LIMITS[1].dailyPayoutMinor;
   return KYC_LIMITS[0].dailyPayoutMinor;
+}
+
+function assertCryptoAllowed(
+  user: { cryptoFriendly: boolean },
+  method: RailKind,
+  currency: string,
+) {
+  const cryptoAsset = (() => {
+    try {
+      return isCryptoCode(currency);
+    } catch {
+      return false;
+    }
+  })();
+  if ((method === "CRYPTO" || cryptoAsset) && !user.cryptoFriendly) {
+    throw new Error("Crypto rails require a crypto-friendly retail account");
+  }
 }
 
 export async function createPayin(input: {
@@ -33,6 +51,7 @@ export async function createPayin(input: {
   if (user.kycStatus !== "APPROVED") {
     throw new Error("Pay-in requires an approved KYC profile");
   }
+  assertCryptoAllowed(user, input.method, input.currency);
 
   await ensureCustomerWallets(user.id, user.name, [input.currency]);
   const partner = await getConfiguredRailsPartner();
@@ -143,6 +162,7 @@ export async function createPayout(input: {
   if (user.kycStatus !== "APPROVED") {
     throw new Error("Payout requires an approved KYC profile");
   }
+  assertCryptoAllowed(user, input.method, input.currency);
 
   const limit = dailyLimit(user.kycTier);
   if (input.amountMinor > limit) {

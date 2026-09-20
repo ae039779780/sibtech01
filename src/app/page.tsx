@@ -2,12 +2,12 @@ import { LicenseBadge, Logo } from "@/components/brand";
 import { Button } from "@/components/ui";
 
 const modules = [
-  ["Accounts", "CAD, USD, EUR, GBP, USDT, BTC — one wallet."],
-  ["Add money", "Local rails, SWIFT, or crypto deposit."],
-  ["Send", "Pay anyone, locally or across borders."],
-  ["Cards", "Virtual card. Spend crypto at the tap."],
+  ["Accounts", "CAD, USD, EUR, GBP — plus USDT/BTC when crypto-friendly."],
+  ["Add money", "Local rails, SWIFT-like stub, or crypto deposit. DEMO labeled."],
+  ["Send", "Pay locally or across borders on the RailsPartner stub."],
+  ["Cards", "Virtual card UI. Spend-crypto is a DEMO surface."],
   ["Exchange", "AFIX quotes with a spread you control."],
-  ["Global account", "Local details via partner EMI / bank."],
+  ["Global account", "Local details via partner EMI — DEMO pending."],
 ];
 
 export default function MarketingPage() {
@@ -17,6 +17,7 @@ export default function MarketingPage() {
         <Logo />
         <nav className="hidden items-center gap-8 text-sm text-muted md:flex">
           <a href="#product">Product</a>
+          <a href="/architecture">Architecture</a>
           <a href="#license">License</a>
           <a href="/login">Log in</a>
         </nav>
@@ -33,13 +34,35 @@ export default function MarketingPage() {
             Canadian-licensed. Global by partners. One app for wallets, pay-in,
             payout, cards, and crypto FX.
           </p>
+          <p className="mt-4 max-w-md text-sm text-muted">
+            <span className="mr-2 inline-flex rounded-full bg-warn/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-warn">
+              DEMO
+            </span>
+            Demo-complete by design — not a live bank. Rails are Thunes / Terra stubs.
+          </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button href="/login" className="h-12 px-6 text-base">
+            <Button href="/register?kind=PERSONAL" className="h-12 px-6 text-base">
+              Personal
+            </Button>
+            <Button href="/register?kind=BUSINESS" variant="ghost" className="h-12 px-6">
+              Business
+            </Button>
+          </div>
+          <p className="mt-3 text-xs text-muted">
+            Business is a single-user demo label — not SMB invites or a staff matrix.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3 text-sm">
+            <a href="/login" className="text-teal">
               Open the app
-            </Button>
-            <Button href="/login?next=/admin" variant="ghost" className="h-12 px-6">
-              Admin
-            </Button>
+            </a>
+            <span className="text-muted">·</span>
+            <a href="/architecture" className="text-teal">
+              Architecture
+            </a>
+            <span className="text-muted">·</span>
+            <a href="/login?next=/admin" className="text-teal">
+              Staff console
+            </a>
           </div>
         </div>
         <div className="flex justify-center">
@@ -96,13 +119,13 @@ export default function MarketingPage() {
           <article className="rounded-[1.4rem] bg-white/[0.04] p-6">
             <h3 className="font-medium">Thunes or TerraPay</h3>
             <p className="mt-2 text-sm text-muted">
-              Same ledger. Switch the adapter — never the customer book.
+              Same ledger. Switch the DEMO adapter — never the customer book.
             </p>
           </article>
           <article className="rounded-[1.4rem] bg-white/[0.04] p-6">
             <h3 className="font-medium">Crypto-friendly</h3>
             <p className="mt-2 text-sm text-muted">
-              Hold it, send it, spend it on the card.
+              Hold it, send it, spend it on the card — when the retail flag is on.
             </p>
           </article>
         </div>
@@ -111,7 +134,7 @@ export default function MarketingPage() {
       <footer className="border-t border-line px-6 py-8 text-sm text-muted">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <Logo />
-          <p>Sibtech Llc · Assaf Edry · Demo</p>
+          <p>Sibtech Llc · Assaf Edry · Demo-complete · not a live bank</p>
         </div>
       </footer>
     </div>

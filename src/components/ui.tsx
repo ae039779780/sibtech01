@@ -136,6 +136,21 @@ export function EmptyState({ title, body }: { title: string; body: string }) {
   );
 }
 
+export function DemoBadge({ children = "DEMO" }: { children?: ReactNode }) {
+  return <Badge tone="warn">{children}</Badge>;
+}
+
+export function DemoNote({ children }: { children: ReactNode }) {
+  return (
+    <p className="mt-2 text-sm text-muted">
+      <span className="mr-2 inline-flex rounded-full bg-warn/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-warn">
+        DEMO
+      </span>
+      {children}
+    </p>
+  );
+}
+
 export function Stat({
   label,
   value,

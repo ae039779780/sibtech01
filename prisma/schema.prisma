@@ -12,12 +12,14 @@ model User {
   email        String   @unique
   passwordHash String
   name         String
-  role         String
-  kycStatus    String
-  kycTier      Int      @default(0)
-  country      String   @default("CA")
-  frozen       Boolean  @default(false)
-  phone        String?
+  role           String
+  kycStatus      String
+  kycTier        Int      @default(0)
+  country        String   @default("CA")
+  frozen         Boolean  @default(false)
+  cryptoFriendly Boolean  @default(false)
+  accountKind    String   @default("PERSONAL")
+  phone          String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

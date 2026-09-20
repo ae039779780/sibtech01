@@ -1,5 +1,5 @@
 import { submitKycAction } from "@/app/actions/customer";
-import { Badge, Button, Field } from "@/components/ui";
+import { Badge, Button, DemoNote, Field } from "@/components/ui";
 import { requireSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { kycTone } from "@/lib/format";
@@ -15,10 +15,12 @@ export default async function ProfilePage() {
     <div className="mx-auto max-w-lg">
       <h1 className="text-3xl font-semibold tracking-tight">Profile</h1>
       <p className="mt-2 text-sm text-muted">Identity for the Canadian license. IDV is a partner in production.</p>
+      <DemoNote>No live KYC vendor. Status is in-app only — submit, then Compliance or Admin decide.</DemoNote>
       <div className="mb-6 mt-5">
         <Badge tone={kycTone(user.kycStatus) as "ok"}>{user.kycStatus}</Badge>
         <span className="ml-3 text-sm text-muted">
-          {user.country} · tier {user.kycTier}
+          {user.accountKind === "BUSINESS" ? "Business" : "Personal"} · {user.country} · tier {user.kycTier}
+          {user.cryptoFriendly ? " · crypto-friendly" : ""}
           {user.frozen ? " · frozen" : ""}
         </span>
       </div>

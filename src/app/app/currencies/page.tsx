@@ -1,4 +1,4 @@
-import { Badge, PageHeader } from "@/components/ui";
+import { Badge, DemoNote, PageHeader } from "@/components/ui";
 import { CURRENCIES } from "@/lib/currencies";
 
 export default function CurrenciesPage() {
@@ -9,9 +9,10 @@ export default function CurrenciesPage() {
     <div>
       <PageHeader
         eyebrow="Currencies"
-        title={`${CURRENCIES.length} assets on the Sibtech book`}
-        description="Wallet and FX matrix are multi-currency from day one. Liquidity is partner-backed in production; this catalog is the product surface."
+        title={`${CURRENCIES.length}-asset catalog`}
+        description="Catalog UI only. Do not treat this as ninety live rails or partner liquidity."
       />
+      <DemoNote>Wallet defaults are CAD/USD/EUR/GBP plus USDT/BTC for crypto-friendly retail. Everything else is a catalog row.</DemoNote>
       <p className="mb-4 text-sm text-muted">
         {fiat.length} fiat · {crypto.length} crypto
       </p>

@@ -10,6 +10,7 @@ import { requireSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { currencyPrefix, displayDate, displayFigure, kycTone } from "@/lib/format";
 import { t } from "@/lib/i18n";
+import { isCryptoCode } from "@/lib/currencies";
 import { getWalletOverview } from "@/lib/services/wallets";
 import { ArrowUpRight, CreditCard, Plus, Repeat } from "lucide-react";
 
@@ -27,7 +28,10 @@ export default async function CustomerHome() {
     prisma.user.findUniqueOrThrow({ where: { id: session.id } }),
     prisma.card.findFirst({ where: { userId: session.id } }),
   ]);
-  const cad = balances.find((b) => b.account.currency === "CAD");
+  const visible = session.cryptoFriendly
+    ? balances
+    : balances.filter((b) => !isCryptoCode(b.account.currency));
+  const cad = visible.find((b) => b.account.currency === "CAD");
   const first = session.name.split(" ")[0];
 
   return (
@@ -74,7 +78,7 @@ export default async function CustomerHome() {
         <div>
           <SectionLabel href="/app/wallet">Accounts</SectionLabel>
           <div className="divide-y divide-line">
-            {balances.map((b) => (
+            {visible.map((b) => (
               <AccountRow
                 key={b.account.id}
                 code={b.account.currency}

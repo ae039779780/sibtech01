@@ -1,13 +1,24 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import {
+  can,
+  isStaffRole,
+  parseAccountKind,
+  parseRole,
+  type AccountKind,
+  type Capability,
+  type Role,
+} from "@/lib/auth/permissions";
 
 export type SessionUser = {
   id: string;
   email: string;
   name: string;
-  role: "CUSTOMER" | "ADMIN" | "COMPLIANCE";
+  role: Role;
   kycStatus: string;
   kycTier: number;
+  cryptoFriendly: boolean;
+  accountKind: AccountKind;
 };
 
 const COOKIE = "sibtech_session";
@@ -15,6 +26,28 @@ const COOKIE = "sibtech_session";
 function secret() {
   const value = process.env.AUTH_SECRET ?? "local-demo-auth-secret-not-for-production";
   return new TextEncoder().encode(value);
+}
+
+export function toSessionUser(user: {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  kycStatus: string;
+  kycTier: number;
+  cryptoFriendly?: boolean;
+  accountKind?: string;
+}): SessionUser {
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: parseRole(user.role),
+    kycStatus: user.kycStatus,
+    kycTier: user.kycTier,
+    cryptoFriendly: Boolean(user.cryptoFriendly),
+    accountKind: parseAccountKind(user.accountKind),
+  };
 }
 
 export async function createSessionToken(user: SessionUser): Promise<string> {
@@ -29,14 +62,16 @@ export async function createSessionToken(user: SessionUser): Promise<string> {
 export async function readSessionToken(token: string): Promise<SessionUser | null> {
   try {
     const { payload } = await jwtVerify(token, secret());
-    return {
+    return toSessionUser({
       id: String(payload.id ?? payload.sub),
       email: String(payload.email),
       name: String(payload.name),
-      role: payload.role as SessionUser["role"],
+      role: String(payload.role),
       kycStatus: String(payload.kycStatus ?? "UNSTARTED"),
       kycTier: Number(payload.kycTier ?? 0),
-    };
+      cryptoFriendly: Boolean(payload.cryptoFriendly),
+      accountKind: String(payload.accountKind ?? "PERSONAL"),
+    });
   } catch {
     return null;
   }
@@ -74,9 +109,22 @@ export async function requireSession(): Promise<SessionUser> {
   return session;
 }
 
-export async function requireAdmin(): Promise<SessionUser> {
+export async function requireStaff(): Promise<SessionUser> {
   const session = await requireSession();
-  if (session.role !== "ADMIN" && session.role !== "COMPLIANCE") {
+  if (!isStaffRole(session.role)) {
+    throw new Error("FORBIDDEN");
+  }
+  return session;
+}
+
+/** Admin-only. Freeze, settle, and partner switch use requireCapability instead when mixed. */
+export async function requireAdmin(): Promise<SessionUser> {
+  return requireCapability("settings.rails");
+}
+
+export async function requireCapability(capability: Capability): Promise<SessionUser> {
+  const session = await requireStaff();
+  if (!can(session.role, capability)) {
     throw new Error("FORBIDDEN");
   }
   return session;

@@ -72,8 +72,10 @@ async function main() {
   const customerEmail = env("DEMO_CUSTOMER_EMAIL", "jordan@sibtech.demo");
   const pendingEmail = env("DEMO_PENDING_EMAIL", "amira@sibtech.demo");
   const adminEmail = env("DEMO_ADMIN_EMAIL", "admin@sibtech.demo");
+  const complianceEmail = env("DEMO_COMPLIANCE_EMAIL", "compliance@sibtech.demo");
+  const supportEmail = env("DEMO_SUPPORT_EMAIL", "support@sibtech.demo");
 
-  const [jordan, amira, admin] = await Promise.all([
+  const [jordan, amira, admin, compliance, support] = await Promise.all([
     prisma.user.create({
       data: {
         email: customerEmail,
@@ -84,6 +86,8 @@ async function main() {
         kycTier: 2,
         country: "CA",
         phone: "+1 416 555 0148",
+        cryptoFriendly: true,
+        accountKind: "PERSONAL",
       },
     }),
     prisma.user.create({
@@ -96,17 +100,44 @@ async function main() {
         kycTier: 0,
         country: "CA",
         phone: "+1 604 555 0190",
+        cryptoFriendly: false,
+        accountKind: "PERSONAL",
       },
     }),
     prisma.user.create({
       data: {
         email: adminEmail,
         passwordHash: await hashPassword(env("DEMO_ADMIN_PASSWORD", "SibtechDemo!admin")),
-        name: "Sibtech Compliance",
+        name: "Alex Rivera",
         role: "ADMIN",
         kycStatus: "APPROVED",
         kycTier: 2,
         country: "CA",
+        accountKind: "PERSONAL",
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: complianceEmail,
+        passwordHash: await hashPassword(env("DEMO_COMPLIANCE_PASSWORD", "SibtechDemo!compliance")),
+        name: "Maya Chen",
+        role: "COMPLIANCE",
+        kycStatus: "APPROVED",
+        kycTier: 2,
+        country: "CA",
+        accountKind: "PERSONAL",
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: supportEmail,
+        passwordHash: await hashPassword(env("DEMO_SUPPORT_PASSWORD", "SibtechDemo!support")),
+        name: "Sam Okonkwo",
+        role: "SUPPORT",
+        kycStatus: "APPROVED",
+        kycTier: 2,
+        country: "CA",
+        accountKind: "PERSONAL",
       },
     }),
   ]);
@@ -248,7 +279,7 @@ async function main() {
       railsCorridor: "swift-eur",
       idempotencyKey: "seed-swift-payout",
       beneficiaryId: northwind.id,
-      description: "SWIFT to Northwind GmbH",
+      description: "SWIFT-like stub to Northwind GmbH",
     },
   });
 
@@ -277,7 +308,7 @@ async function main() {
         country: "LU",
         accountNumber: "LU4455 0010 8831",
         iban: "LU44 0010 8831 2290 0000",
-        bankName: "Partner EMI (sandbox)",
+        bankName: "Partner EMI (DEMO stub)",
         partner: "iban-partner-tbd",
         status: "PENDING",
       },
@@ -287,7 +318,7 @@ async function main() {
         country: "US",
         accountNumber: "8801442291",
         routing: "026009593",
-        bankName: "Partner bank (sandbox)",
+        bankName: "Partner bank (DEMO stub)",
         partner: "iban-partner-tbd",
         status: "PENDING",
       },
@@ -320,7 +351,7 @@ async function main() {
     data: [
       { key: "rails.partner", value: partner },
       { key: "license.home", value: "CA" },
-      { key: "compliance.officer", value: "Sibtech Compliance" },
+      { key: "compliance.officer", value: "Maya Chen" },
     ],
   });
 
@@ -331,7 +362,11 @@ async function main() {
         action: "seed.completed",
         entityType: "System",
         entityId: "sibtech",
-        payload: JSON.stringify({ partner, pendingPayin: pendingPayin.id }),
+        payload: JSON.stringify({
+          partner,
+          pendingPayin: pendingPayin.id,
+          roles: ["CUSTOMER", "ADMIN", "COMPLIANCE", "SUPPORT"],
+        }),
       },
       {
         actorId: jordan.id,
@@ -343,11 +378,15 @@ async function main() {
     ],
   });
 
-  console.log("Seeded Sibtech demo:");
-  console.log(`  customer  ${customerEmail}`);
-  console.log(`  pending   ${pendingEmail}`);
-  console.log(`  admin     ${adminEmail}`);
-  console.log(`  rails     ${partner} stub`);
+  console.log("Seeded Sibtech demo (not a live bank):");
+  console.log(`  retail+crypto  ${customerEmail}`);
+  console.log(`  retail KYC     ${pendingEmail}`);
+  console.log(`  admin          ${adminEmail}`);
+  console.log(`  compliance     ${complianceEmail}`);
+  console.log(`  support        ${supportEmail}`);
+  console.log(`  rails          ${partner} DEMO stub`);
+  void compliance;
+  void support;
 }
 
 main()

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/auth/session";
+import { requireCapability } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { decideKyc } from "@/lib/services/kyc";
 import { settlePayin } from "@/lib/services/payments";
@@ -9,10 +9,10 @@ import { appLedger } from "@/lib/ledger";
 import { writeAudit } from "@/lib/audit";
 
 export async function decideKycAction(formData: FormData) {
-  const admin = await requireAdmin();
+  const actor = await requireCapability("kyc.decide");
   await decideKyc({
     userId: String(formData.get("userId") ?? ""),
-    reviewerId: admin.id,
+    reviewerId: actor.id,
     decision: String(formData.get("decision") ?? "APPROVED") as "APPROVED" | "REJECTED",
     reason: String(formData.get("reason") ?? ""),
   });
@@ -22,20 +22,20 @@ export async function decideKycAction(formData: FormData) {
 }
 
 export async function settlePayinAction(formData: FormData) {
-  const admin = await requireAdmin();
-  await settlePayin(String(formData.get("paymentId") ?? ""), admin.id);
+  const actor = await requireCapability("rails.settle");
+  await settlePayin(String(formData.get("paymentId") ?? ""), actor.id);
   revalidatePath("/admin");
   revalidatePath("/admin/rails");
   revalidatePath("/admin/transactions");
 }
 
 export async function freezeUserAction(formData: FormData) {
-  const admin = await requireAdmin();
+  const actor = await requireCapability("user.freeze");
   const userId = String(formData.get("userId") ?? "");
   const frozen = String(formData.get("frozen") ?? "true") === "true";
   await prisma.user.update({ where: { id: userId }, data: { frozen } });
   await writeAudit({
-    actorId: admin.id,
+    actorId: actor.id,
     action: frozen ? "user.frozen" : "user.unfrozen",
     entityType: "User",
     entityId: userId,
@@ -44,12 +44,12 @@ export async function freezeUserAction(formData: FormData) {
 }
 
 export async function reverseEntryAction(formData: FormData) {
-  const admin = await requireAdmin();
+  const actor = await requireCapability("ledger.reverse");
   const id = String(formData.get("entryId") ?? "");
   const reason = String(formData.get("reason") ?? "Admin reversal");
-  await appLedger().reverse(id, reason, admin.id);
+  await appLedger().reverse(id, reason, actor.id);
   await writeAudit({
-    actorId: admin.id,
+    actorId: actor.id,
     action: "ledger.reversed",
     entityType: "JournalEntry",
     entityId: id,
@@ -59,7 +59,7 @@ export async function reverseEntryAction(formData: FormData) {
 }
 
 export async function updateSpreadAction(formData: FormData) {
-  const admin = await requireAdmin();
+  const actor = await requireCapability("fx.spread");
   const pair = String(formData.get("pair") ?? "*");
   const spreadBps = Number(formData.get("spreadBps") ?? 40);
   await prisma.fxSpread.upsert({
@@ -68,7 +68,7 @@ export async function updateSpreadAction(formData: FormData) {
     update: { spreadBps, active: true },
   });
   await writeAudit({
-    actorId: admin.id,
+    actorId: actor.id,
     action: "fx.spread.updated",
     entityType: "FxSpread",
     entityId: pair,
@@ -79,7 +79,7 @@ export async function updateSpreadAction(formData: FormData) {
 }
 
 export async function setRailsPartnerAction(formData: FormData) {
-  const admin = await requireAdmin();
+  const actor = await requireCapability("settings.rails");
   const value = String(formData.get("partner") ?? "thunes");
   await prisma.setting.upsert({
     where: { key: "rails.partner" },
@@ -87,7 +87,7 @@ export async function setRailsPartnerAction(formData: FormData) {
     update: { value },
   });
   await writeAudit({
-    actorId: admin.id,
+    actorId: actor.id,
     action: "settings.rails",
     entityType: "Setting",
     entityId: "rails.partner",
@@ -97,14 +97,14 @@ export async function setRailsPartnerAction(formData: FormData) {
 }
 
 export async function holdReleaseAction(formData: FormData) {
-  const admin = await requireAdmin();
+  const actor = await requireCapability("ledger.reverse");
   const holdId = String(formData.get("holdId") ?? "");
   const action = String(formData.get("action") ?? "release");
   if (action === "release") {
     await appLedger().releaseHold(holdId);
   }
   await writeAudit({
-    actorId: admin.id,
+    actorId: actor.id,
     action: `hold.${action}`,
     entityType: "Hold",
     entityId: holdId,

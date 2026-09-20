@@ -1,6 +1,7 @@
 import { AccountRow, SectionLabel } from "@/components/money-ui";
 import { requireSession } from "@/lib/auth/session";
 import { displayAmount } from "@/lib/format";
+import { isCryptoCode } from "@/lib/currencies";
 import { getWalletOverview } from "@/lib/services/wallets";
 import { prisma } from "@/lib/db";
 
@@ -16,13 +17,16 @@ export default async function WalletPage() {
       take: 12,
     }),
   ]);
+  const visible = session.cryptoFriendly
+    ? balances
+    : balances.filter((b) => !isCryptoCode(b.account.currency));
 
   return (
     <div className="mx-auto max-w-lg lg:max-w-3xl">
       <h1 className="text-3xl font-semibold tracking-tight">Accounts</h1>
       <p className="mt-2 text-sm text-muted">Every currency sits on the Sibtech ledger. Holds come off what you can send.</p>
       <div className="mt-6 divide-y divide-line rounded-[1.6rem] bg-white/[0.03] px-3 py-2">
-        {balances.map((b) => (
+        {visible.map((b) => (
           <AccountRow
             key={b.account.id}
             code={b.account.currency}

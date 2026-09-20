@@ -4,10 +4,12 @@ import { Logo } from "@/components/brand";
 import { logoutAction } from "@/app/actions/auth";
 import { Avatar } from "@/components/money-ui";
 import { cn } from "@/lib/format";
+import { roleLabel } from "@/lib/auth/permissions";
 import type { SessionUser } from "@/lib/auth/session";
 import {
   Activity,
   ArrowUpRight,
+  Bitcoin,
   CreditCard,
   Globe,
   Home,
@@ -36,7 +38,7 @@ export function AppShell({
   children: ReactNode;
 }) {
   const pathname = usePathname();
-  const home = brand === "Admin" ? "/admin" : "/app";
+  const home = brand === "Retail" ? "/app" : "/admin";
   const mobile = items.slice(0, 5);
 
   return (
@@ -70,6 +72,9 @@ export function AppShell({
             );
           })}
         </nav>
+        <p className="mt-auto hidden px-3 text-[10px] uppercase tracking-[0.16em] text-muted xl:block">
+          Demo-complete · not a live bank
+        </p>
         <form action={logoutAction} className="mt-4 hidden xl:block">
           <button className="w-full rounded-2xl px-3 py-2 text-left text-sm text-muted hover:text-ink" type="submit">
             Sign out
@@ -88,7 +93,12 @@ export function AppShell({
           <div className="flex items-center gap-3">
             <div className="hidden text-right text-sm md:block">
               <p className="font-medium text-ink">{user.name}</p>
-              <p className="text-xs text-muted">{user.email}</p>
+              <p className="text-xs text-muted">
+                {roleLabel(user.role)}
+                {user.role === "CUSTOMER" && user.cryptoFriendly ? " · crypto" : ""}
+                {" · "}
+                {user.email}
+              </p>
             </div>
             <Avatar name={user.name} />
           </div>
@@ -123,7 +133,7 @@ export function AppShell({
   );
 }
 
-export const customerNav: Item[] = [
+const retailBase: Item[] = [
   { href: "/app", label: "Home", icon: <Home className="h-5 w-5" /> },
   { href: "/app/wallet", label: "Accounts", icon: <Wallet className="h-5 w-5" /> },
   { href: "/app/send", label: "Payments", icon: <ArrowUpRight className="h-5 w-5" /> },
@@ -135,9 +145,21 @@ export const customerNav: Item[] = [
   { href: "/app/currencies", label: "Markets", icon: <Activity className="h-5 w-5" /> },
   { href: "/app/fx", label: "FX", icon: <Repeat className="h-5 w-5" /> },
   { href: "/app/activity", label: "Activity", icon: <Activity className="h-5 w-5" /> },
+  { href: "/architecture", label: "Architecture", icon: <LayoutDashboard className="h-5 w-5" /> },
 ];
 
-export const adminNav: Item[] = [
+export function customerNavFor(user: SessionUser): Item[] {
+  if (!user.cryptoFriendly) return retailBase;
+  const items = [...retailBase];
+  items.splice(4, 0, {
+    href: "/app/crypto",
+    label: "Crypto",
+    icon: <Bitcoin className="h-5 w-5" />,
+  });
+  return items;
+}
+
+const staffAll: Item[] = [
   { href: "/admin", label: "Home", icon: <LayoutDashboard className="h-5 w-5" /> },
   { href: "/admin/users", label: "Users", icon: <Users className="h-5 w-5" /> },
   { href: "/admin/kyc", label: "KYC", icon: <Shield className="h-5 w-5" /> },
@@ -146,4 +168,29 @@ export const adminNav: Item[] = [
   { href: "/admin/fx", label: "FX", icon: <Repeat className="h-5 w-5" /> },
   { href: "/admin/audit", label: "Audit", icon: <Shield className="h-5 w-5" /> },
   { href: "/admin/settings", label: "Settings", icon: <Settings className="h-5 w-5" /> },
+  { href: "/architecture", label: "Architecture", icon: <Globe className="h-5 w-5" /> },
 ];
+
+export function staffNavFor(role: SessionUser["role"]): Item[] {
+  if (role === "ADMIN") return staffAll;
+  if (role === "COMPLIANCE") {
+    return staffAll.filter((item) =>
+      ["/admin", "/admin/users", "/admin/kyc", "/admin/audit", "/architecture"].includes(item.href),
+    );
+  }
+  return staffAll.filter((item) =>
+    [
+      "/admin",
+      "/admin/users",
+      "/admin/transactions",
+      "/admin/rails",
+      "/admin/audit",
+      "/architecture",
+    ].includes(item.href),
+  );
+}
+
+/** @deprecated use customerNavFor(session) */
+export const customerNav = retailBase;
+/** @deprecated use staffNavFor(role) */
+export const adminNav = staffAll;

@@ -1,5 +1,5 @@
 import { createPayinAction } from "@/app/actions/customer";
-import { Badge, Button, Field } from "@/components/ui";
+import { Badge, Button, DemoNote, Field } from "@/components/ui";
 import { TxRow } from "@/components/money-ui";
 import { requireSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
@@ -30,6 +30,7 @@ export default async function PayInPage({
       <p className="mt-2 text-sm text-muted">
         Get local or international details from {partner.displayName}. Admin settles the inbound credit.
       </p>
+      <DemoNote>RailsPartner returns sandbox instructions only. No live Thunes or Terra call.</DemoNote>
 
       <form action={createPayinAction} className="mt-8 space-y-5">
         <label className="block text-center">
@@ -48,7 +49,10 @@ export default async function PayInPage({
               className="w-full rounded-2xl border-0 bg-white/[0.06] px-3 py-3 text-sm"
               defaultValue="CAD"
             >
-              {["CAD", "USD", "EUR", "GBP", "USDT", "BTC"].map((c) => (
+              {(session.cryptoFriendly
+                ? ["CAD", "USD", "EUR", "GBP", "USDT", "BTC"]
+                : ["CAD", "USD", "EUR", "GBP"]
+              ).map((c) => (
                 <option key={c}>{c}</option>
               ))}
             </select>
@@ -60,8 +64,8 @@ export default async function PayInPage({
               defaultValue="LOCAL"
             >
               <option value="LOCAL">Bank transfer</option>
-              <option value="SWIFT">International</option>
-              <option value="CRYPTO">Crypto</option>
+              <option value="SWIFT">International (SWIFT-like DEMO)</option>
+              {session.cryptoFriendly ? <option value="CRYPTO">Crypto</option> : null}
             </select>
           </Field>
         </div>
