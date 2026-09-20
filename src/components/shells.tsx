@@ -38,11 +38,11 @@ export function AppShell({
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-line px-4 py-3 md:px-8">
-          <div className="md:hidden">
+          <div className="flex items-center gap-3">
             <Logo compact />
-          </div>
-          <div className="hidden text-sm text-muted md:block">
-            {user.name} · {user.email}
+            <div className="hidden text-sm text-muted md:block">
+              {user.name} · {user.email}
+            </div>
           </div>
           <form action={logoutAction}>
             <button className="text-sm text-muted hover:text-ink" type="submit">

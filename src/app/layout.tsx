@@ -23,6 +23,13 @@ export const metadata: Metadata = {
   title: "Sibtech — Canadian-licensed global money",
   description:
     "Wallet, global accounts, pay-in/payout, cards, and crypto FX on one website. Licensed in Canada; rails via Thunes or TerraPay.",
+  icons: {
+    icon: [
+      { url: "/brand/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/brand/favicon-16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: [{ url: "/brand/apple-touch-icon.png", sizes: "180x180" }],
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
