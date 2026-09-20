@@ -1,9 +1,22 @@
-import { prisma } from "@/lib/db";
+import { actorCan } from "@/lib/auth/permissions";
+import { isCryptoCode } from "@/lib/currencies";
 import { defaultSpreadBps, railsPartnerId } from "@/lib/config";
+import { prisma } from "@/lib/db";
 import { quoteFx } from "@/lib/fx/engine";
 import { appLedger, customerWalletCode, partnerNostroCode } from "@/lib/ledger";
 import { writeAudit } from "@/lib/audit";
 import { ensureCustomerWallets } from "./wallets";
+
+function pairUsesCrypto(from: string, to: string) {
+  const check = (code: string) => {
+    try {
+      return isCryptoCode(code);
+    } catch {
+      return ["USDT", "BTC", "ETH"].includes(code);
+    }
+  };
+  return check(from) || check(to);
+}
 
 export async function spreadForPair(from: string, to: string): Promise<number> {
   const pair = `${from}/${to}`;
@@ -31,7 +44,14 @@ export async function executeExchange(input: {
 }) {
   const user = await prisma.user.findUnique({ where: { id: input.userId } });
   if (!user) throw new Error("User not found");
+  if (user.frozen) throw new Error("Account is frozen");
   if (user.kycStatus !== "APPROVED") throw new Error("Exchange requires approved KYC");
+  if (!actorCan(user, "fx.trade")) {
+    throw new Error("This role cannot exchange");
+  }
+  if (pairUsesCrypto(input.fromCurrency, input.toCurrency) && !actorCan(user, "crypto.exchange")) {
+    throw new Error("Crypto exchange requires the Crypto role or a crypto-friendly Retail flag");
+  }
 
   await ensureCustomerWallets(user.id, user.name, [input.fromCurrency, input.toCurrency]);
   const quote = await previewQuote(input.fromCurrency, input.toCurrency, input.amountMinor);

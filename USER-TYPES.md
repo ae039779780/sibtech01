@@ -1,45 +1,50 @@
-# User types — demo scope
+# User types — permission matrix
 
 **Demo-complete by design; not a live bank.**
 
-This walkthrough ships **four** seeded types. Everything else in a fuller staff or SMB matrix is out of scope for this demo.
+All **10 roles** are enums with capability gates in `src/lib/auth/permissions.ts`. The Musk-cut seed shows five must-logins plus three optional cheap accounts. Full SMB Finance/Viewer seats and a full Risk ops console are post-demo.
 
-## Retail (`CUSTOMER`)
+## Matrix (source of truth)
 
-- Personal or Business signup **label** (Business is single-user — no SMB invites).
-- Optional **crypto-friendly** flag (Jordan: on · Amira: off).
-- Surfaces: wallet, KYC status, global account, pay-in, payout (Bank / Push2card / UPI), FX, cards UI, crypto screens when the flag is on.
+| Role | Money | Crypto deposit/exchange | Staff |
+|------|--------|--------------------------|--------|
+| **Retail** | Wallet, pay-in, Bank/Push2card/UPI payout, FX | Only with `cryptoFriendly` flag | — |
+| **Crypto** | Same as Retail | Yes | — |
+| **Freelancer** | Same as Retail | No | — |
+| **SmbOwner** | Pay-in/out + **invites** (DEMO TeamInvite) | No | — |
+| **SmbFinance** | Pay-in/out | No | — |
+| **SmbViewer** | **Read-only** wallet | No | — |
+| **Admin** | — | — | KYC, freeze, settle, partner switch, **feature flags**, holds |
+| **Compliance** | — | — | **KYC + freeze** |
+| **Support** | — | — | Console view. **Never freezes alone** — escalate |
+| **Risk** | — | — | **Holds + velocity** (not freeze). UI stub; not a must-seed |
 
-Seeded:
+Payout corridors stay **Bank | Push2card | UPI**. SWIFT sits under Bank.
 
-| Person | Email | Notes |
-|--------|--------|--------|
-| Jordan Ellison | `jordan@sibtech.demo` | Verified, crypto on, funded wallets |
-| Amira Haddad | `amira@sibtech.demo` | KYC in review, crypto off |
+## Must-seed (login)
 
-## Admin (`ADMIN`)
+| Person | Email | Role | Notes |
+|--------|--------|------|--------|
+| Jordan Ellison | `jordan@sibtech.demo` | Retail | Verified, crypto flag on, funded wallets |
+| Amira Haddad | `amira@sibtech.demo` | Retail | KYC in review, crypto off |
+| Alex Rivera | `admin@sibtech.demo` | Admin | Settle, partner switch, flags, freeze, KYC |
+| Maya Chen | `compliance@sibtech.demo` | Compliance | KYC + freeze |
+| Sam Okonkwo | `support@sibtech.demo` | Support | Escalate freeze only |
 
-Alex Rivera · `admin@sibtech.demo`
+## Optional seed
 
-Can freeze retail accounts, settle pay-ins, switch Thunes ↔ Terra DEMO adapters, decide KYC, set FX spread, reverse journal entries.
+| Person | Email | Role |
+|--------|--------|------|
+| Kai Nakamura | `kai@sibtech.demo` | Crypto |
+| Freya Lindqvist | `freya@sibtech.demo` | Freelancer |
+| Omar Rahman | `omar@sibtech.demo` | SMB Owner (DEMO invite) |
 
-## Compliance (`COMPLIANCE`)
-
-Maya Chen · `compliance@sibtech.demo`
-
-Owns the KYC queue. **Cannot freeze.**
-
-## Support (`SUPPORT`)
-
-Sam Okonkwo · `support@sibtech.demo`
-
-View-only staff console (users, ledger, rails queue, audit). **Cannot freeze**, settle, switch partners, or decide KYC.
+SmbFinance / SmbViewer logins and a Risk user are **not** seeded. Gates exist in code.
 
 ## Explicitly not in this demo
 
-- Risk, Freelancer, SMB Owner / Finance / Viewer as first-class types
-- Full SMB multi-user invites
 - Live Thunes / Terra / BaaS / KYC vendor calls
 - Production exam-grade ledger recon
+- Full SMB Finance/Viewer seats + Risk ops beyond the stub
 - Mobile / PWA / loyalty / analytics theatre
 - ~90 live currency rails (catalog UI only)

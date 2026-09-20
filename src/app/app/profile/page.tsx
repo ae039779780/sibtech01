@@ -1,6 +1,7 @@
 import { submitKycAction } from "@/app/actions/customer";
 import { Badge, Button, DemoNote, Field } from "@/components/ui";
 import { requireSession } from "@/lib/auth/session";
+import { roleLabel } from "@/lib/auth/permissions";
 import { prisma } from "@/lib/db";
 import { kycTone } from "@/lib/format";
 
@@ -19,7 +20,7 @@ export default async function ProfilePage() {
       <div className="mb-6 mt-5">
         <Badge tone={kycTone(user.kycStatus) as "ok"}>{user.kycStatus}</Badge>
         <span className="ml-3 text-sm text-muted">
-          {user.accountKind === "BUSINESS" ? "Business" : "Personal"} · {user.country} · tier {user.kycTier}
+          {user.accountKind === "BUSINESS" ? "Business" : "Personal"} · {roleLabel(user.role)} · {user.country} · tier {user.kycTier}
           {user.cryptoFriendly ? " · crypto-friendly" : ""}
           {user.frozen ? " · frozen" : ""}
         </span>

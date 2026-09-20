@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { writeAudit } from "@/lib/audit";
+import { actorCan } from "@/lib/auth/permissions";
 import { KYC_LIMITS } from "@/lib/config";
 import { appLedger, customerWalletCode, partnerNostroCode } from "@/lib/ledger";
 import { getConfiguredRailsPartner, getRailsPartner, parseRailsProvider } from "@/lib/partners/rails";
@@ -82,6 +83,9 @@ export async function sendPayout(input: {
   if (user.frozen) throw new Error("Account is frozen");
   if (user.kycStatus !== "APPROVED") {
     throw new Error("Payout requires an approved KYC profile");
+  }
+  if (!actorCan(user, "payout.create")) {
+    throw new Error("This role cannot send payouts");
   }
 
   const limit = dailyLimit(user.kycTier);

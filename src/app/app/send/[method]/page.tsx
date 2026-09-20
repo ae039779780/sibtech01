@@ -1,9 +1,10 @@
 import { PayoutFlow } from "@/components/payout-flow";
 import { DemoNote } from "@/components/ui";
+import { actorCan } from "@/lib/auth/permissions";
 import { requireSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { payoutMethodBySlug } from "@/lib/payments/payout";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 export default async function PayoutMethodPage({
   params,
@@ -13,6 +14,9 @@ export default async function PayoutMethodPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const session = await requireSession();
+  if (!actorCan(session, "payout.create")) {
+    redirect("/app");
+  }
   const { method: slug } = await params;
   const { error } = await searchParams;
   const method = payoutMethodBySlug(slug);
@@ -23,9 +27,7 @@ export default async function PayoutMethodPage({
     orderBy: { createdAt: "desc" },
   });
 
-  const currencies = session.cryptoFriendly
-    ? ["CAD", "USD", "EUR", "GBP"]
-    : ["CAD", "USD", "EUR", "GBP"];
+  const currencies = ["CAD", "USD", "EUR", "GBP"];
 
   return (
     <div className="mx-auto max-w-lg">

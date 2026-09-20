@@ -49,7 +49,7 @@ export default function MarketingPage() {
             </Button>
           </div>
           <p className="mt-3 text-xs text-muted">
-            Business is a single-user demo label — not SMB invites or a staff matrix.
+            Business signup creates an SMB Owner with DEMO invites — not full Finance/Viewer seats.
           </p>
           <div className="mt-6 flex flex-wrap gap-3 text-sm">
             <a href="/login" className="text-teal">

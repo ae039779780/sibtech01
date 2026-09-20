@@ -1,12 +1,17 @@
 import { exchangeAction } from "@/app/actions/customer";
 import { Button, DemoNote, Field } from "@/components/ui";
+import { actorCan } from "@/lib/auth/permissions";
 import { requireSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { displayAmount } from "@/lib/format";
 import { previewQuote } from "@/lib/services/fx";
+import { redirect } from "next/navigation";
 
 export default async function ExchangePage() {
   const session = await requireSession();
+  if (!actorCan(session, "fx.trade")) {
+    redirect("/app");
+  }
   const quote = await previewQuote("CAD", "USD", 1_000_00n);
   const history = await prisma.fxQuote.findMany({
     where: { userId: session.id },

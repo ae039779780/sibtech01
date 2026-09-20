@@ -2,7 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireSession } from "@/lib/auth/session";
+import { requireCapability, requireSession } from "@/lib/auth/session";
+import { actorCan } from "@/lib/auth/permissions";
+import { writeAudit } from "@/lib/audit";
 import { prisma } from "@/lib/db";
 import { toMinor } from "@/lib/money";
 import { currencyDecimals } from "@/lib/currencies";
@@ -31,9 +33,12 @@ export async function submitKycAction(formData: FormData) {
 }
 
 export async function createPayinAction(formData: FormData) {
-  const session = await requireSession();
+  const session = await requireCapability("payin.create");
   const currency = String(formData.get("currency") ?? "CAD");
   const method = String(formData.get("method") ?? "LOCAL") as PayinMethod;
+  if ((method === "CRYPTO" || ["USDT", "BTC"].includes(currency)) && !actorCan(session, "crypto.deposit")) {
+    redirect("/app/pay-in?error=crypto");
+  }
   const amount = String(formData.get("amount") ?? "0");
   const result = await createPayin({
     userId: session.id,
@@ -50,7 +55,7 @@ export async function createPayinAction(formData: FormData) {
 }
 
 export async function createPayoutAction(formData: FormData) {
-  const session = await requireSession();
+  const session = await requireCapability("payout.create");
   const currency = String(formData.get("currency") ?? "CAD");
   const method = String(formData.get("method") ?? "BANK");
   const amount = String(formData.get("amount") ?? "0");
@@ -87,12 +92,12 @@ export async function createPayoutAction(formData: FormData) {
 }
 
 export async function addBeneficiaryAction(formData: FormData) {
-  const session = await requireSession();
+  const session = await requireCapability("payout.create");
   await prisma.beneficiary.create({
     data: {
       userId: session.id,
       name: String(formData.get("name") ?? ""),
-      type: String(formData.get("type") ?? "LOCAL"),
+      type: String(formData.get("type") ?? "BANK"),
       currency: String(formData.get("currency") ?? "CAD"),
       country: String(formData.get("country") ?? "CA"),
       accountNumber: String(formData.get("accountNumber") ?? "") || null,
@@ -107,9 +112,13 @@ export async function addBeneficiaryAction(formData: FormData) {
 }
 
 export async function exchangeAction(formData: FormData) {
-  const session = await requireSession();
+  const session = await requireCapability("fx.trade");
   const fromCurrency = String(formData.get("fromCurrency") ?? "CAD");
   const toCurrency = String(formData.get("toCurrency") ?? "USD");
+  const cryptoPair = ["USDT", "BTC", "ETH"].includes(fromCurrency) || ["USDT", "BTC", "ETH"].includes(toCurrency);
+  if (cryptoPair && !actorCan(session, "crypto.exchange")) {
+    redirect("/app/exchange?error=crypto");
+  }
   const amount = String(formData.get("amount") ?? "0");
   await executeExchange({
     userId: session.id,
@@ -120,4 +129,31 @@ export async function exchangeAction(formData: FormData) {
   revalidatePath("/app");
   revalidatePath("/app/exchange");
   revalidatePath("/app/wallet");
+}
+
+export async function inviteTeamAction(formData: FormData) {
+  const session = await requireCapability("smb.invite");
+  const email = String(formData.get("email") ?? "")
+    .trim()
+    .toLowerCase();
+  const memberRole = String(formData.get("memberRole") ?? "SMB_VIEWER");
+  if (!email) {
+    redirect("/app/team?error=invalid");
+  }
+  const invite = await prisma.teamInvite.create({
+    data: {
+      ownerUserId: session.id,
+      email,
+      memberRole: memberRole === "SMB_FINANCE" ? "SMB_FINANCE" : "SMB_VIEWER",
+      status: "PENDING",
+    },
+  });
+  await writeAudit({
+    actorId: session.id,
+    action: "smb.invite",
+    entityType: "TeamInvite",
+    entityId: invite.id,
+    payload: { email, memberRole: invite.memberRole },
+  });
+  revalidatePath("/app/team");
 }

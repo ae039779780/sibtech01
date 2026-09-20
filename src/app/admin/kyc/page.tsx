@@ -1,6 +1,6 @@
 import { decideKycAction } from "@/app/actions/admin";
 import { Badge, Button, Field, PageHeader } from "@/components/ui";
-import { capabilitiesFor } from "@/lib/auth/permissions";
+import { capabilitiesFor, CUSTOMER_ROLES, roleLabel } from "@/lib/auth/permissions";
 import { requireStaff } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { kycTone } from "@/lib/format";
@@ -9,7 +9,7 @@ export default async function AdminKycPage() {
   const session = await requireStaff();
   const caps = capabilitiesFor(session.role);
   const cases = await prisma.user.findMany({
-    where: { role: "CUSTOMER" },
+    where: { role: { in: [...CUSTOMER_ROLES, "CUSTOMER"] } },
     include: { kycProfile: true },
     orderBy: { updatedAt: "desc" },
   });
@@ -21,7 +21,7 @@ export default async function AdminKycPage() {
         title="Review queue"
         description={
           caps.kyc
-            ? "Approve to unlock pay-in, payout, and exchange. Decisions are written to the audit log. No live IDV vendor."
+            ? "Compliance and Admin approve KYC. Decisions write to the audit log. No live IDV vendor."
             : "View only. Compliance and Admin record decisions."
         }
       />
@@ -32,7 +32,7 @@ export default async function AdminKycPage() {
               <div>
                 <p className="font-medium">{u.name}</p>
                 <p className="text-sm text-muted">
-                  {u.email}
+                  {u.email} · {roleLabel(u.role)}
                   {u.cryptoFriendly ? " · crypto-friendly" : ""}
                   {u.accountKind === "BUSINESS" ? " · business" : ""}
                 </p>

@@ -20,11 +20,14 @@ Open [http://localhost:3000](http://localhost:3000). Architecture map: [/archite
 
 | Type | Email | Password |
 |------|--------|----------|
-| Retail · crypto-friendly · verified | `jordan@sibtech.demo` | `SibtechDemo!jordan` |
-| Retail · KYC in review (no crypto flag) | `amira@sibtech.demo` | `SibtechDemo!amira` |
-| Admin (freeze, settle, partner switch) | `admin@sibtech.demo` | `SibtechDemo!admin` |
-| Compliance (KYC; cannot freeze) | `compliance@sibtech.demo` | `SibtechDemo!compliance` |
-| Support (view-only; cannot freeze) | `support@sibtech.demo` | `SibtechDemo!support` |
+| **Must** Retail verified (crypto flag) | `jordan@sibtech.demo` | `SibtechDemo!jordan` |
+| **Must** Retail · KYC in review | `amira@sibtech.demo` | `SibtechDemo!amira` |
+| **Must** Admin (settle, partner, flags, freeze, KYC) | `admin@sibtech.demo` | `SibtechDemo!admin` |
+| **Must** Compliance (KYC + freeze) | `compliance@sibtech.demo` | `SibtechDemo!compliance` |
+| **Must** Support (escalate freeze; never freezes alone) | `support@sibtech.demo` | `SibtechDemo!support` |
+| Optional Crypto role | `kai@sibtech.demo` | `SibtechDemo!kai` |
+| Optional Freelancer | `freya@sibtech.demo` | `SibtechDemo!freya` |
+| Optional SMB Owner (DEMO invite) | `omar@sibtech.demo` | `SibtechDemo!omar` |
 
 These are published demo accounts for the local walkthrough — not production secrets. `.env` is gitignored; only `.env.example` is committed.
 
@@ -38,13 +41,14 @@ These are published demo accounts for the local walkthrough — not production s
 
 Amira is the same retail type without the crypto flag — crypto nav and USDT/BTC stay hidden.
 
-Personal vs Business on marketing is a signup label only. Business does **not** unlock SMB invites.
+Business signup creates an **SMB Owner**. Owner can send DEMO team invites. Full Finance/Viewer seats are post-demo.
 
 ### Staff walkthrough
 
-1. **Admin** (`admin@sibtech.demo`) — freeze retail accounts, settle pending pay-ins, switch Thunes ↔ Terra stubs, decide KYC, set FX spread, reverse journal entries.
-2. **Compliance** (`compliance@sibtech.demo`) — KYC queue only. Cannot freeze.
-3. **Support** (`support@sibtech.demo`) — view users, ledger, rails, audit. Cannot freeze, settle, or switch partners.
+1. **Admin** (`admin@sibtech.demo`) — freeze customers, settle pay-ins, switch Thunes ↔ Terra stubs, decide KYC, set FX spread, reverse journal entries, toggle feature flags.
+2. **Compliance** (`compliance@sibtech.demo`) — KYC queue **and freeze**.
+3. **Support** (`support@sibtech.demo`) — view users, ledger, rails, audit. **Escalate freeze** — never freezes alone.
+4. **Risk** is in the permission matrix (holds/velocity) with a stub `/admin/risk` page. Not a must-seed login.
 
 ## Stack
 
@@ -80,7 +84,7 @@ Auth · KYC status · audit
 
 **Partner model:** Sibtech is the Canadian principal. `RailsPartner` is the only place corridor settlement is spoken. Do not hardcode a single vendor. Default config is the Thunes stub.
 
-See [USER-TYPES.md](./USER-TYPES.md) for the four seeded types, [PRODUCT-GOAL.md](./PRODUCT-GOAL.md) for the longer product north star, and [SIBTECH-MASTER-PLAN.md](./SIBTECH-MASTER-PLAN.md).
+See [USER-TYPES.md](./USER-TYPES.md) for the 10-role matrix and seeded logins, [PRODUCT-GOAL.md](./PRODUCT-GOAL.md) for the longer product north star, and [SIBTECH-MASTER-PLAN.md](./SIBTECH-MASTER-PLAN.md).
 
 ## License & compliance posture
 
@@ -88,7 +92,8 @@ See [USER-TYPES.md](./USER-TYPES.md) for the four seeded types, [PRODUCT-GOAL.md
 - Operate globally through contracted partners, not by claiming extra licenses in this repo.
 - KYC statuses and tiers gate pay-in, payout, and exchange.
 - Admin actions and money movement write to an append-only audit log.
-- Support cannot freeze.
+- Support never freezes alone (escalate to Compliance/Admin).
+- Compliance and Admin approve KYC and freeze. Risk holds/velocity. Admin settles, switches partners, and sets feature flags.
 
 ## Scripts
 
@@ -105,7 +110,8 @@ See [USER-TYPES.md](./USER-TYPES.md) for the four seeded types, [PRODUCT-GOAL.md
 | Module | Status |
 |--------|--------|
 | Auth, KYC status, wallet, pay-in, payout (Bank / Push2card / UPI) | Working demo · rails labeled **DEMO** |
-| Staff: Admin / Compliance / Support | Seeded · Support cannot freeze |
+| Staff: 10-role matrix (5 must-seed + 3 optional) | Support escalates freeze · Compliance/Admin KYC+freeze |
+| SMB Owner DEMO invite | Working stub · Finance/Viewer seats **not** seeded |
 | Global account, card + spend crypto, FX matrix, exchange, currency catalog | Real pages; issuance/BIN/90 rails **not** integrated |
 | Live Thunes / Terra / BaaS / KYC vendors | **Not built** |
-| SMB multi-user invites, PWA, loyalty, analytics theatre | **Not built** |
+| SMB Finance/Viewer full seats, PWA, loyalty, analytics theatre | **Not built** |

@@ -1,21 +1,28 @@
-import { setRailsPartnerAction } from "@/app/actions/admin";
+import { setFeatureFlagAction, setRailsPartnerAction } from "@/app/actions/admin";
 import { Button, DemoNote, PageHeader } from "@/components/ui";
 import { capabilitiesFor } from "@/lib/auth/permissions";
 import { requireStaff } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { listRailsAdapters } from "@/lib/partners/rails";
 
+const FLAG_KEYS = ["feature.cards", "feature.iban", "feature.crypto"] as const;
+
 export default async function AdminSettingsPage() {
   const session = await requireStaff();
   const caps = capabilitiesFor(session.role);
-  const current = await prisma.setting.findUnique({ where: { key: "rails.partner" } });
+  const settings = await prisma.setting.findMany();
+  const current = settings.find((s) => s.key === "rails.partner");
+  const flags = FLAG_KEYS.map((key) => ({
+    key,
+    value: settings.find((s) => s.key === key)?.value ?? "on",
+  }));
   const adapters = listRailsAdapters();
   return (
     <div>
       <PageHeader
         eyebrow="Settings"
-        title="Partners & license"
-        description="Sibtech holds the Canadian financial license. Choose which global rail adapter the demo uses. Do not hardcode a single vendor."
+        title="Partners, flags & license"
+        description="Admin switches the DEMO rail adapter and feature flags. Sibtech remains the Canadian-licensed principal."
       />
       <DemoNote>Switching adapters never calls Thunes or Terra. Both are in-process stubs.</DemoNote>
       {caps.rails ? (
@@ -39,8 +46,43 @@ export default async function AdminSettingsPage() {
           Current adapter: {current?.value ?? "thunes"}. Only Admin can switch partners.
         </p>
       )}
+
+      <div className="card hairline mt-6 p-6">
+        <p className="font-medium">Feature flags</p>
+        <p className="mt-1 text-sm text-muted">Admin-only. Surfaces stay DEMO even when on.</p>
+        {caps.flags ? (
+          <div className="mt-4 space-y-3">
+            {flags.map((flag) => (
+              <form key={flag.key} action={setFeatureFlagAction} className="flex flex-wrap items-center gap-3 text-sm">
+                <input type="hidden" name="key" value={flag.key} />
+                <span className="min-w-40 font-mono text-xs">{flag.key}</span>
+                <select
+                  name="value"
+                  defaultValue={flag.value}
+                  className="rounded-xl border border-line bg-navy-lift/40 px-3 py-2"
+                >
+                  <option value="on">on</option>
+                  <option value="off">off</option>
+                </select>
+                <Button type="submit" variant="ghost">
+                  Save
+                </Button>
+              </form>
+            ))}
+          </div>
+        ) : (
+          <ul className="mt-3 space-y-1 text-sm text-muted">
+            {flags.map((flag) => (
+              <li key={flag.key}>
+                {flag.key}: {flag.value}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       <div className="card hairline mt-6 p-6 text-sm text-muted">
-        License home: Canada · Feature flags for cards/IBAN remain stub surfaces until partners are contracted.
+        License home: Canada · Cards/IBAN remain stub surfaces until partners are contracted.
       </div>
     </div>
   );

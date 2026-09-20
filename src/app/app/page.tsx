@@ -7,6 +7,7 @@ import {
   TxRow,
 } from "@/components/money-ui";
 import { requireSession } from "@/lib/auth/session";
+import { actorCan } from "@/lib/auth/permissions";
 import { prisma } from "@/lib/db";
 import { currencyPrefix, displayDate, displayFigure, kycTone } from "@/lib/format";
 import { t } from "@/lib/i18n";
@@ -29,7 +30,7 @@ export default async function CustomerHome() {
     prisma.user.findUniqueOrThrow({ where: { id: session.id } }),
     prisma.card.findFirst({ where: { userId: session.id } }),
   ]);
-  const visible = session.cryptoFriendly
+  const visible = actorCan(session, "crypto.deposit")
     ? balances
     : balances.filter((b) => !isCryptoCode(b.account.currency));
   const cad = visible.find((b) => b.account.currency === "CAD");
@@ -57,9 +58,15 @@ export default async function CustomerHome() {
       </div>
 
       <div className="mt-8 flex justify-center gap-5 lg:justify-start">
-        <QuickAction href="/app/pay-in" label="Add money" icon={<Plus className="h-6 w-6" />} />
-        <QuickAction href="/app/send" label="Send" icon={<ArrowUpRight className="h-6 w-6" />} />
-        <QuickAction href="/app/exchange" label="Exchange" icon={<Repeat className="h-6 w-6" />} />
+        {actorCan(session, "payin.create") ? (
+          <QuickAction href="/app/pay-in" label="Add money" icon={<Plus className="h-6 w-6" />} />
+        ) : null}
+        {actorCan(session, "payout.create") ? (
+          <QuickAction href="/app/send" label="Send" icon={<ArrowUpRight className="h-6 w-6" />} />
+        ) : null}
+        {actorCan(session, "fx.trade") ? (
+          <QuickAction href="/app/exchange" label="Exchange" icon={<Repeat className="h-6 w-6" />} />
+        ) : null}
         <QuickAction href="/app/cards" label="Cards" icon={<CreditCard className="h-6 w-6" />} />
       </div>
 

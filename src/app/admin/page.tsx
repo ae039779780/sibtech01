@@ -31,9 +31,17 @@ export default async function AdminHome() {
       </div>
       <p className="mt-8 max-w-2xl text-sm text-muted">{partner.settlementModel}</p>
       <ul className="mt-6 space-y-1 text-sm text-muted">
-        <li>KYC decisions: {caps.kyc ? "yes" : "view only"}</li>
-        <li>Freeze accounts: {caps.freeze ? "yes (Admin)" : "no — Support cannot freeze"}</li>
-        <li>Settle pay-ins / switch partner: {caps.settle ? "yes (Admin)" : "no"}</li>
+        <li>KYC decisions: {caps.kyc ? "yes (Compliance + Admin)" : "view only"}</li>
+        <li>
+          Freeze accounts:{" "}
+          {caps.freeze
+            ? "yes (Compliance + Admin)"
+            : caps.escalate
+              ? "no — Support escalates freeze and never freezes alone"
+              : "no"}
+        </li>
+        <li>Settle / partner switch / feature flags: {caps.settle ? "yes (Admin)" : "no"}</li>
+        <li>Risk holds / velocity: {caps.risk ? "yes" : "no"}</li>
       </ul>
     </div>
   );

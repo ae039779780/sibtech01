@@ -222,6 +222,17 @@ model AuditLog {
   @@index([createdAt])
 }
 
+model TeamInvite {
+  id           String   @id @default(cuid())
+  ownerUserId  String
+  email        String
+  memberRole   String
+  status       String   @default("PENDING")
+  createdAt    DateTime @default(now())
+
+  @@index([ownerUserId])
+}
+
 model Setting {
   key   String @id
   value String

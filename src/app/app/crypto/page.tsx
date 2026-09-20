@@ -1,5 +1,6 @@
 import { Badge, DemoNote } from "@/components/ui";
 import { AccountRow, TxRow } from "@/components/money-ui";
+import { actorCan } from "@/lib/auth/permissions";
 import { requireSession } from "@/lib/auth/session";
 import { isCryptoCode } from "@/lib/currencies";
 import { prisma } from "@/lib/db";
@@ -9,7 +10,7 @@ import { redirect } from "next/navigation";
 
 export default async function CryptoPage() {
   const session = await requireSession();
-  if (!session.cryptoFriendly) {
+  if (!actorCan(session, "crypto.deposit")) {
     redirect("/app");
   }
 
@@ -69,7 +70,7 @@ export default async function CryptoPage() {
       <p className="mt-6 text-xs text-muted">
         Card spend-from-crypto is a DEMO UI on Cards. Convert-at-spend uses the same AFIX spread book.
       </p>
-      <Badge tone="teal">crypto-friendly retail</Badge>
+        <Badge tone="teal">crypto · Crypto role or Retail flag</Badge>
     </div>
   );
 }

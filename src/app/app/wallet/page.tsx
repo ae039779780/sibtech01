@@ -1,4 +1,5 @@
 import { AccountRow, SectionLabel } from "@/components/money-ui";
+import { actorCan } from "@/lib/auth/permissions";
 import { requireSession } from "@/lib/auth/session";
 import { displayAmount } from "@/lib/format";
 import { isCryptoCode } from "@/lib/currencies";
@@ -17,7 +18,7 @@ export default async function WalletPage() {
       take: 12,
     }),
   ]);
-  const visible = session.cryptoFriendly
+  const visible = actorCan(session, "crypto.deposit")
     ? balances
     : balances.filter((b) => !isCryptoCode(b.account.currency));
 

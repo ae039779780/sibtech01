@@ -2,12 +2,18 @@ import { loginAction } from "@/app/actions/auth";
 import { Logo } from "@/components/brand";
 import { Button, Field } from "@/components/ui";
 
-const accounts = [
-  ["Retail · crypto on", "jordan@sibtech.demo", "SibtechDemo!jordan"],
+const must = [
+  ["Retail verified", "jordan@sibtech.demo", "SibtechDemo!jordan"],
   ["Retail · KYC review", "amira@sibtech.demo", "SibtechDemo!amira"],
   ["Admin", "admin@sibtech.demo", "SibtechDemo!admin"],
   ["Compliance", "compliance@sibtech.demo", "SibtechDemo!compliance"],
-  ["Support · no freeze", "support@sibtech.demo", "SibtechDemo!support"],
+  ["Support · escalate only", "support@sibtech.demo", "SibtechDemo!support"],
+];
+
+const optional = [
+  ["Crypto role", "kai@sibtech.demo", "SibtechDemo!kai"],
+  ["Freelancer", "freya@sibtech.demo", "SibtechDemo!freya"],
+  ["SMB Owner", "omar@sibtech.demo", "SibtechDemo!omar"],
 ];
 
 export default async function LoginPage({
@@ -46,8 +52,17 @@ export default async function LoginPage({
         <p className="mt-3 text-sm text-muted">
           Seeded walkthrough accounts — published demo passwords, not secrets.
         </p>
-        <ul className="mt-4 space-y-1 text-xs text-muted">
-          {accounts.map(([label, email, password]) => (
+        <p className="mt-4 text-xs uppercase tracking-[0.16em] text-teal">Must-seed</p>
+        <ul className="mt-2 space-y-1 text-xs text-muted">
+          {must.map(([label, email, password]) => (
+            <li key={email}>
+              <span className="text-ink">{label}</span> · {email} / {password}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 text-xs uppercase tracking-[0.16em] text-muted">Optional</p>
+        <ul className="mt-2 space-y-1 text-xs text-muted">
+          {optional.map(([label, email, password]) => (
             <li key={email}>
               <span className="text-ink">{label}</span> · {email} / {password}
             </li>

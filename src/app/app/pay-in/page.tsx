@@ -1,10 +1,12 @@
 import { createPayinAction } from "@/app/actions/customer";
 import { Badge, Button, DemoNote, Field } from "@/components/ui";
 import { TxRow } from "@/components/money-ui";
+import { actorCan } from "@/lib/auth/permissions";
 import { requireSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { displayDate } from "@/lib/format";
 import { getConfiguredRailsPartner } from "@/lib/partners/rails";
+import { redirect } from "next/navigation";
 
 export default async function PayInPage({
   searchParams,
@@ -12,6 +14,9 @@ export default async function PayInPage({
   searchParams: Promise<{ created?: string }>;
 }) {
   const session = await requireSession();
+  if (!actorCan(session, "payin.create")) {
+    redirect("/app");
+  }
   const params = await searchParams;
   const [payments, partner] = await Promise.all([
     prisma.payment.findMany({
@@ -49,7 +54,7 @@ export default async function PayInPage({
               className="w-full rounded-2xl border-0 bg-white/[0.06] px-3 py-3 text-sm"
               defaultValue="CAD"
             >
-              {(session.cryptoFriendly
+              {(actorCan(session, "crypto.deposit")
                 ? ["CAD", "USD", "EUR", "GBP", "USDT", "BTC"]
                 : ["CAD", "USD", "EUR", "GBP"]
               ).map((c) => (
@@ -65,7 +70,7 @@ export default async function PayInPage({
             >
               <option value="LOCAL">Bank transfer</option>
               <option value="SWIFT">International (SWIFT-like DEMO)</option>
-              {session.cryptoFriendly ? <option value="CRYPTO">Crypto</option> : null}
+              {actorCan(session, "crypto.deposit") ? <option value="CRYPTO">Crypto</option> : null}
             </select>
           </Field>
         </div>

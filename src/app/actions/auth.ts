@@ -8,7 +8,7 @@ import {
   setSessionCookie,
   toSessionUser,
 } from "@/lib/auth/session";
-import { isStaffRole, parseAccountKind } from "@/lib/auth/permissions";
+import { isStaffRole, parseAccountKind, parseRole } from "@/lib/auth/permissions";
 import { writeAudit } from "@/lib/audit";
 import { ensureCustomerWallets } from "@/lib/services/wallets";
 
@@ -39,6 +39,7 @@ export async function registerAction(formData: FormData) {
   const password = String(formData.get("password") ?? "");
   const accountKind = parseAccountKind(formData.get("accountKind"));
   const cryptoFriendly = String(formData.get("cryptoFriendly") ?? "") === "on";
+  const role = accountKind === "BUSINESS" ? "SMB_OWNER" : "RETAIL";
   if (!name || !email || password.length < 8) {
     redirect("/register?error=invalid");
   }
@@ -51,7 +52,7 @@ export async function registerAction(formData: FormData) {
       name,
       email,
       passwordHash: await hashPassword(password),
-      role: "CUSTOMER",
+      role,
       kycStatus: "UNSTARTED",
       kycTier: 0,
       country: "CA",
@@ -66,7 +67,7 @@ export async function registerAction(formData: FormData) {
     action: "auth.register",
     entityType: "User",
     entityId: user.id,
-    payload: { accountKind, cryptoFriendly },
+    payload: { accountKind, cryptoFriendly, role: parseRole(role) },
   });
   redirect("/app/profile");
 }

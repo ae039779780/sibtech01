@@ -1,11 +1,13 @@
 import { DemoNote } from "@/components/ui";
 import { listPayoutMethods } from "@/lib/payments/payout";
+import { actorCan } from "@/lib/auth/permissions";
 import { requireSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { displayDate } from "@/lib/format";
 import { payoutMethodLabel, destinationSummary } from "@/lib/payments/payout";
 import { Landmark, CreditCard, Smartphone } from "lucide-react";
 import { TxRow } from "@/components/money-ui";
+import { redirect } from "next/navigation";
 
 const icons = {
   BANK: Landmark,
@@ -15,6 +17,9 @@ const icons = {
 
 export default async function SendPickerPage() {
   const session = await requireSession();
+  if (!actorCan(session, "payout.create")) {
+    redirect("/app");
+  }
   const payouts = await prisma.payment.findMany({
     where: { userId: session.id, direction: "PAYOUT" },
     include: { beneficiary: true },

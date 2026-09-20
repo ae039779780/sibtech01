@@ -82,7 +82,7 @@ Auth · KYC status · audit
 
         <section className="mt-12">
           <p className="text-xs uppercase tracking-[0.2em] text-teal">Demo roles</p>
-          <h2 className="mt-2 text-2xl font-semibold">Four types. Support cannot freeze.</h2>
+          <h2 className="mt-2 text-2xl font-semibold">Ten roles in code. Support never freezes alone.</h2>
           <ul className="mt-4 grid gap-3 md:grid-cols-2">
             {DEMO_SCOPE.roles.map((line) => (
               <li key={line} className="rounded-[1.3rem] bg-white/[0.04] p-5 text-sm">

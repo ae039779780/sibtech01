@@ -1,7 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import {
-  can,
+  actorCan,
   isStaffRole,
   parseAccountKind,
   parseRole,
@@ -45,7 +45,7 @@ export function toSessionUser(user: {
     role: parseRole(user.role),
     kycStatus: user.kycStatus,
     kycTier: user.kycTier,
-    cryptoFriendly: Boolean(user.cryptoFriendly),
+    cryptoFriendly: parseRole(user.role) === "CRYPTO" || Boolean(user.cryptoFriendly),
     accountKind: parseAccountKind(user.accountKind),
   };
 }
@@ -123,8 +123,16 @@ export async function requireAdmin(): Promise<SessionUser> {
 }
 
 export async function requireCapability(capability: Capability): Promise<SessionUser> {
-  const session = await requireStaff();
-  if (!can(session.role, capability)) {
+  const session = await requireSession();
+  if (!actorCan(session, capability)) {
+    throw new Error("FORBIDDEN");
+  }
+  return session;
+}
+
+export async function requireAnyCapability(capabilities: Capability[]): Promise<SessionUser> {
+  const session = await requireSession();
+  if (!capabilities.some((capability) => actorCan(session, capability))) {
     throw new Error("FORBIDDEN");
   }
   return session;

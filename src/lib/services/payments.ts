@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { writeAudit } from "@/lib/audit";
 import { railsPartnerId } from "@/lib/config";
+import { actorCan } from "@/lib/auth/permissions";
 import { isCryptoCode } from "@/lib/currencies";
 import { appLedger, customerWalletCode, partnerNostroCode } from "@/lib/ledger";
 import { getConfiguredRailsPartner } from "@/lib/partners/rails";
@@ -8,7 +9,7 @@ import type { PayinMethod } from "@/lib/partners/rails/types";
 import { ensureCustomerWallets } from "./wallets";
 
 function assertCryptoAllowed(
-  user: { cryptoFriendly: boolean },
+  user: { role: string; cryptoFriendly: boolean },
   method: PayinMethod,
   currency: string,
 ) {
@@ -19,8 +20,8 @@ function assertCryptoAllowed(
       return false;
     }
   })();
-  if ((method === "CRYPTO" || cryptoAsset) && !user.cryptoFriendly) {
-    throw new Error("Crypto rails require a crypto-friendly retail account");
+  if ((method === "CRYPTO" || cryptoAsset) && !actorCan(user, "crypto.deposit")) {
+    throw new Error("Crypto rails require the Crypto role or a crypto-friendly Retail flag");
   }
 }
 
@@ -43,6 +44,9 @@ export async function createPayin(input: {
   if (user.frozen) throw new Error("Account is frozen");
   if (user.kycStatus !== "APPROVED") {
     throw new Error("Pay-in requires an approved KYC profile");
+  }
+  if (!actorCan(user, "payin.create")) {
+    throw new Error("This role cannot create pay-ins");
   }
   assertCryptoAllowed(user, input.method, input.currency);
 

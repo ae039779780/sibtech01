@@ -4,7 +4,7 @@ import { Logo } from "@/components/brand";
 import { logoutAction } from "@/app/actions/auth";
 import { Avatar } from "@/components/money-ui";
 import { cn } from "@/lib/format";
-import { roleLabel } from "@/lib/auth/permissions";
+import { actorCan, isStaffRole, roleLabel } from "@/lib/auth/permissions";
 import type { SessionUser } from "@/lib/auth/session";
 import {
   Activity,
@@ -18,6 +18,7 @@ import {
   Repeat,
   Settings,
   Shield,
+  UserPlus,
   Users,
   Wallet,
 } from "lucide-react";
@@ -34,10 +35,10 @@ export function AppShell({
   children: ReactNode;
 }) {
   const pathname = usePathname();
-  const retail = user.role === "CUSTOMER";
-  const items = retail ? customerNavFor(user) : staffNavFor(user.role);
-  const brand = retail ? "Retail" : roleLabel(user.role);
-  const home = retail ? "/app" : "/admin";
+  const staff = isStaffRole(user.role);
+  const items = staff ? staffNavFor(user.role) : customerNavFor(user);
+  const brand = roleLabel(user.role);
+  const home = staff ? "/admin" : "/app";
   const mobile = items.slice(0, 5);
 
   return (
@@ -94,7 +95,7 @@ export function AppShell({
               <p className="font-medium text-ink">{user.name}</p>
               <p className="text-xs text-muted">
                 {roleLabel(user.role)}
-                {user.role === "CUSTOMER" && user.cryptoFriendly ? " · crypto" : ""}
+                {actorCan(user, "crypto.deposit") ? " · crypto" : ""}
                 {" · "}
                 {user.email}
               </p>
@@ -148,13 +149,27 @@ const retailBase: Item[] = [
 ];
 
 export function customerNavFor(user: SessionUser): Item[] {
-  if (!user.cryptoFriendly) return retailBase;
   const items = [...retailBase];
-  items.splice(4, 0, {
-    href: "/app/crypto",
-    label: "Crypto",
-    icon: <Bitcoin className="h-5 w-5" />,
-  });
+  if (!actorCan(user, "payout.create")) {
+    return items.filter(
+      (item) =>
+        !["/app/send", "/app/pay-in", "/app/exchange", "/app/fx"].includes(item.href),
+    );
+  }
+  if (actorCan(user, "crypto.deposit")) {
+    items.splice(4, 0, {
+      href: "/app/crypto",
+      label: "Crypto",
+      icon: <Bitcoin className="h-5 w-5" />,
+    });
+  }
+  if (actorCan(user, "smb.invite")) {
+    items.push({
+      href: "/app/team",
+      label: "Team",
+      icon: <UserPlus className="h-5 w-5" />,
+    });
+  }
   return items;
 }
 
@@ -166,6 +181,7 @@ const staffAll: Item[] = [
   { href: "/admin/rails", label: "Rails", icon: <ArrowUpRight className="h-5 w-5" /> },
   { href: "/admin/fx", label: "FX", icon: <Repeat className="h-5 w-5" /> },
   { href: "/admin/audit", label: "Audit", icon: <Shield className="h-5 w-5" /> },
+  { href: "/admin/risk", label: "Risk", icon: <Shield className="h-5 w-5" /> },
   { href: "/admin/settings", label: "Settings", icon: <Settings className="h-5 w-5" /> },
   { href: "/architecture", label: "Architecture", icon: <Globe className="h-5 w-5" /> },
 ];
@@ -175,6 +191,19 @@ export function staffNavFor(role: SessionUser["role"]): Item[] {
   if (role === "COMPLIANCE") {
     return staffAll.filter((item) =>
       ["/admin", "/admin/users", "/admin/kyc", "/admin/audit", "/architecture"].includes(item.href),
+    );
+  }
+  if (role === "RISK") {
+    return staffAll.filter((item) =>
+      [
+        "/admin",
+        "/admin/users",
+        "/admin/transactions",
+        "/admin/rails",
+        "/admin/risk",
+        "/admin/audit",
+        "/architecture",
+      ].includes(item.href),
     );
   }
   return staffAll.filter((item) =>
