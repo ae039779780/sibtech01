@@ -28,17 +28,16 @@ type Item = { href: string; label: string; icon: ReactNode };
 
 export function AppShell({
   user,
-  items,
-  brand,
   children,
 }: {
   user: SessionUser;
-  items: Item[];
-  brand: string;
   children: ReactNode;
 }) {
   const pathname = usePathname();
-  const home = brand === "Retail" ? "/app" : "/admin";
+  const retail = user.role === "CUSTOMER";
+  const items = retail ? customerNavFor(user) : staffNavFor(user.role);
+  const brand = retail ? "Retail" : roleLabel(user.role);
+  const home = retail ? "/app" : "/admin";
   const mobile = items.slice(0, 5);
 
   return (
