@@ -4,7 +4,7 @@ import { Button } from "@/components/ui";
 const modules = [
   ["Accounts", "CAD, USD, EUR, GBP — plus USDT/BTC when crypto-friendly."],
   ["Add money", "Local rails, SWIFT-like stub, or crypto deposit. DEMO labeled."],
-  ["Send", "Pay locally or across borders on the RailsPartner stub."],
+  ["Send", "Bank, Push2card, or UPI — confirm, then a DEMO receipt."],
   ["Cards", "Virtual card UI. Spend-crypto is a DEMO surface."],
   ["Exchange", "AFIX quotes with a spread you control."],
   ["Global account", "Local details via partner EMI — DEMO pending."],

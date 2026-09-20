@@ -123,6 +123,9 @@ model Beneficiary {
   iban          String?
   swiftBic      String?
   bankName      String?
+  cardToken     String?
+  cardLast4     String?
+  upiVpa        String?
   cryptoNetwork String?
   cryptoAddress String?
   createdAt     DateTime  @default(now())

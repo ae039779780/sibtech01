@@ -217,7 +217,7 @@ async function main() {
     data: {
       userId: jordan.id,
       name: "Jordan Ellison — RBC",
-      type: "LOCAL",
+      type: "BANK",
       currency: "CAD",
       country: "CA",
       accountNumber: "4510028841",
@@ -229,7 +229,7 @@ async function main() {
     data: {
       userId: jordan.id,
       name: "Northwind GmbH",
-      type: "SWIFT",
+      type: "BANK",
       currency: "EUR",
       country: "DE",
       iban: "DE89 3704 0044 0532 0130 00",
@@ -238,15 +238,26 @@ async function main() {
     },
   });
 
-  await prisma.beneficiary.create({
+  const pushCard = await prisma.beneficiary.create({
     data: {
       userId: jordan.id,
-      name: "Self-custody USDT",
-      type: "CRYPTO",
-      currency: "USDT",
-      country: "XX",
-      cryptoNetwork: "TRON",
-      cryptoAddress: "TXY9demoSelfCustody111111111111",
+      name: "Maya Chen",
+      type: "PUSH2CARD",
+      currency: "USD",
+      country: "US",
+      cardToken: "tok_thunes_demo_8821",
+      cardLast4: "8821",
+    },
+  });
+
+  const upi = await prisma.beneficiary.create({
+    data: {
+      userId: jordan.id,
+      name: "Priya Sharma",
+      type: "UPI",
+      currency: "CAD",
+      country: "IN",
+      upiVpa: "priya.sharma@oksbi",
     },
   });
 
@@ -270,16 +281,16 @@ async function main() {
     data: {
       userId: jordan.id,
       direction: "PAYOUT",
-      method: "SWIFT",
+      method: "BANK",
       amountMinor: "85000",
       currency: "EUR",
       status: "SETTLED",
       railsPartner: partner,
-      railsRef: partner === "thunes" ? "THN-SEED-SWIFT" : "TRP-SEED-SWIFT",
-      railsCorridor: "swift-eur",
-      idempotencyKey: "seed-swift-payout",
+      railsRef: partner === "thunes" ? "THN-SEED-BANK" : "TRP-SEED-BANK",
+      railsCorridor: "bank-eur",
+      idempotencyKey: "seed-bank-payout",
       beneficiaryId: northwind.id,
-      description: "SWIFT-like stub to Northwind GmbH",
+      description: "Bank (SWIFT-like under Bank) to Northwind GmbH",
     },
   });
 
@@ -287,16 +298,50 @@ async function main() {
     data: {
       userId: jordan.id,
       direction: "PAYOUT",
-      method: "LOCAL",
+      method: "BANK",
       amountMinor: "40000",
       currency: "CAD",
       status: "SETTLED",
       railsPartner: partner,
-      railsRef: partner === "thunes" ? "THN-SEED-LOCAL" : "TRP-SEED-LOCAL",
-      railsCorridor: "ca-local-cad",
-      idempotencyKey: "seed-local-payout",
+      railsRef: partner === "thunes" ? "THN-SEED-BANK-CAD" : "TRP-SEED-BANK-CAD",
+      railsCorridor: "bank-cad",
+      idempotencyKey: "seed-bank-local-payout",
       beneficiaryId: rbc.id,
-      description: "EFT to RBC",
+      description: "Bank to RBC",
+    },
+  });
+
+  await prisma.payment.create({
+    data: {
+      userId: jordan.id,
+      direction: "PAYOUT",
+      method: "PUSH2CARD",
+      amountMinor: "2500",
+      currency: "USD",
+      status: "SETTLED",
+      railsPartner: "thunes",
+      railsRef: "THN-SEED-P2C",
+      railsCorridor: "push2card-usd",
+      idempotencyKey: "seed-push2card-payout",
+      beneficiaryId: pushCard.id,
+      description: "Push2card DEMO to Maya Chen •••• 8821",
+    },
+  });
+
+  await prisma.payment.create({
+    data: {
+      userId: jordan.id,
+      direction: "PAYOUT",
+      method: "UPI",
+      amountMinor: "12000",
+      currency: "CAD",
+      status: "SETTLED",
+      railsPartner: partner,
+      railsRef: partner === "thunes" ? "THN-SEED-UPI" : "TRP-SEED-UPI",
+      railsCorridor: "upi-in",
+      idempotencyKey: "seed-upi-payout",
+      beneficiaryId: upi.id,
+      description: "UPI to priya.sharma@oksbi",
     },
   });
 
@@ -350,6 +395,7 @@ async function main() {
   await prisma.setting.createMany({
     data: [
       { key: "rails.partner", value: partner },
+      { key: "rails.push2card.partner", value: "thunes" },
       { key: "license.home", value: "CA" },
       { key: "compliance.officer", value: "Maya Chen" },
     ],

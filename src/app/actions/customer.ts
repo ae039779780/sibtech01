@@ -6,10 +6,11 @@ import { requireSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { toMinor } from "@/lib/money";
 import { currencyDecimals } from "@/lib/currencies";
-import { createPayin, createPayout } from "@/lib/services/payments";
+import { createPayin } from "@/lib/services/payments";
+import { sendPayout } from "@/lib/payments/payout";
 import { submitKyc } from "@/lib/services/kyc";
 import { executeExchange } from "@/lib/services/fx";
-import type { RailKind } from "@/lib/partners/rails/types";
+import type { PayinMethod } from "@/lib/partners/rails/types";
 
 export async function submitKycAction(formData: FormData) {
   const session = await requireSession();
@@ -32,7 +33,7 @@ export async function submitKycAction(formData: FormData) {
 export async function createPayinAction(formData: FormData) {
   const session = await requireSession();
   const currency = String(formData.get("currency") ?? "CAD");
-  const method = String(formData.get("method") ?? "LOCAL") as RailKind;
+  const method = String(formData.get("method") ?? "LOCAL") as PayinMethod;
   const amount = String(formData.get("amount") ?? "0");
   const result = await createPayin({
     userId: session.id,
@@ -51,20 +52,38 @@ export async function createPayinAction(formData: FormData) {
 export async function createPayoutAction(formData: FormData) {
   const session = await requireSession();
   const currency = String(formData.get("currency") ?? "CAD");
-  const method = String(formData.get("method") ?? "LOCAL") as RailKind;
+  const method = String(formData.get("method") ?? "BANK");
   const amount = String(formData.get("amount") ?? "0");
-  await createPayout({
-    userId: session.id,
-    amountMinor: toMinor(amount, currencyDecimals(currency)),
-    currency,
-    method,
-    beneficiaryId: String(formData.get("beneficiaryId") ?? ""),
-    idempotencyKey: `payout:${session.id}:${Date.now()}`,
-    actorId: session.id,
-  });
+  const slug = method === "PUSH2CARD" ? "push2card" : method === "UPI" ? "upi" : "bank";
+  let result;
+  try {
+    result = await sendPayout({
+      userId: session.id,
+      amountMinor: toMinor(amount, currencyDecimals(currency)),
+      currency,
+      method,
+      destination: {
+        name: String(formData.get("name") ?? ""),
+        country: String(formData.get("country") ?? "") || undefined,
+        accountNumber: String(formData.get("accountNumber") ?? "") || undefined,
+        iban: String(formData.get("iban") ?? "") || undefined,
+        swiftBic: String(formData.get("swiftBic") ?? "") || undefined,
+        bankName: String(formData.get("bankName") ?? "") || undefined,
+        cardToken: String(formData.get("cardToken") ?? "") || undefined,
+        cardLast4: String(formData.get("cardLast4") ?? "") || undefined,
+        upiVpa: String(formData.get("upiVpa") ?? "") || undefined,
+      },
+      idempotencyKey: `payout:${session.id}:${Date.now()}`,
+      actorId: session.id,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Payout failed";
+    redirect(`/app/send/${slug}?error=${encodeURIComponent(message)}`);
+  }
   revalidatePath("/app");
   revalidatePath("/app/send");
   revalidatePath("/app/wallet");
+  redirect(`/app/send/receipt/${result.payment.id}`);
 }
 
 export async function addBeneficiaryAction(formData: FormData) {

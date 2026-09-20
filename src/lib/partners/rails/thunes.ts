@@ -1,4 +1,4 @@
-import { buildPayin, buildPayout, recall, SHARED_CORRIDORS } from "./stub-engine";
+import { buildPayin, buildPayout, recall, PAYOUT_CORRIDORS } from "./stub-engine";
 import type {
   PayinRequest,
   PayoutRequest,
@@ -10,10 +10,10 @@ export class ThunesRailsPartner implements RailsPartner {
   readonly id = "thunes" as const;
   readonly displayName = "Thunes (DEMO stub)";
   readonly settlementModel =
-    "DEMO — no live vendor calls. Sibtech remains the Canadian-licensed principal; this Thunes adapter is a labeled stub for local, SWIFT-like, and crypto corridors. Wallet, ledger, KYC, and FX stay in Sibtech software.";
+    "DEMO — no live vendor calls. Payout picker is Bank, Push2card, and UPI. Push2card prefers this Thunes stub. Never a live vendor session.";
 
   async listCorridors() {
-    return SHARED_CORRIDORS;
+    return PAYOUT_CORRIDORS;
   }
 
   async createPayin(request: PayinRequest) {

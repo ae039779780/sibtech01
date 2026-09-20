@@ -11,6 +11,7 @@ import { prisma } from "@/lib/db";
 import { currencyPrefix, displayDate, displayFigure, kycTone } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { isCryptoCode } from "@/lib/currencies";
+import { payoutMethodLabel } from "@/lib/payments/payout";
 import { getWalletOverview } from "@/lib/services/wallets";
 import { ArrowUpRight, CreditCard, Plus, Repeat } from "lucide-react";
 
@@ -101,7 +102,7 @@ export default async function CustomerHome() {
                 p.beneficiary?.name ??
                 (p.direction === "PAYIN" ? "Added money" : p.description)
               }
-              subtitle={`${p.method === "SWIFT" ? "International" : p.method === "CRYPTO" ? "Crypto" : "Local"} · ${displayDate(p.createdAt)}`}
+              subtitle={`${p.direction === "PAYOUT" ? payoutMethodLabel(p.method) : p.method} · ${displayDate(p.createdAt)}`}
               amount={p.amountMinor}
               currency={p.currency}
               inbound={p.direction === "PAYIN"}

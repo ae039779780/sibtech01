@@ -33,7 +33,7 @@ These are published demo accounts for the local walkthrough — not production s
 1. Log in as Jordan (retail + crypto flag).
 2. Home shows KYC **Verified**, CAD/USD/EUR/GBP/USDT/BTC balances, and recent activity.
 3. **Add money** — create a local, SWIFT-like, or crypto pay-in. Instructions come from the `RailsPartner` **DEMO** stub.
-4. **Send** — pay a local, SWIFT-like, or crypto beneficiary. The ledger holds funds, then captures when the stub accepts.
+4. **Send** — pick **Bank**, **Push2card**, or **UPI**. Confirm, then a DEMO receipt. SWIFT maps under Bank. Push2card is a token/iframe stub (no PAN). RailsPartner stays Thunes/Terra stubs.
 5. Open **Wallet**, **Crypto**, **Exchange**, **Global account**, **Cards**, **Currencies** (catalog UI only), **FX**, **Profile / KYC**.
 
 Amira is the same retail type without the crypto flag — crypto nav and USDT/BTC stay hidden.
@@ -104,7 +104,7 @@ See [USER-TYPES.md](./USER-TYPES.md) for the four seeded types, [PRODUCT-GOAL.md
 
 | Module | Status |
 |--------|--------|
-| Auth, KYC status, wallet, pay-in, payout (local / SWIFT-like / crypto) | Working demo · rails labeled **DEMO** |
+| Auth, KYC status, wallet, pay-in, payout (Bank / Push2card / UPI) | Working demo · rails labeled **DEMO** |
 | Staff: Admin / Compliance / Support | Seeded · Support cannot freeze |
 | Global account, card + spend crypto, FX matrix, exchange, currency catalog | Real pages; issuance/BIN/90 rails **not** integrated |
 | Live Thunes / Terra / BaaS / KYC vendors | **Not built** |

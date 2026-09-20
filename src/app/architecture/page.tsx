@@ -11,7 +11,7 @@ const own = [
 
 const partners = [
   ["RailsPartner", "Thunes (default) or TerraPay / Terra Rail — DEMO stubs, never live calls."],
-  ["SWIFT-like payout", "Labeled stub corridor. No correspondent bank session."],
+  ["Payout corridors", "Bank (SWIFT sits here), Push2card (Thunes token/iframe, no PAN), UPI VPA."],
   ["Global account / IBAN", "Partner EMI details, status PENDING until contracted."],
   ["Card BIN", "Virtual card UI. Issuance and crypto-spend convert are DEMO."],
   ["Crypto custody", "Screens for hold / send / spend. No live chain or exchange."],

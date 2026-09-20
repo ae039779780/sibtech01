@@ -1,6 +1,16 @@
-export type RailsProviderId = "thunes" | "terrapay";
+export type PayinMethod = "LOCAL" | "SWIFT" | "CRYPTO";
+export type PayoutMethod = "BANK" | "PUSH2CARD" | "UPI";
+export type RailKind = PayinMethod | PayoutMethod;
 
-export type RailKind = "LOCAL" | "SWIFT" | "CRYPTO";
+export function isPayinMethod(value: string): value is PayinMethod {
+  return value === "LOCAL" || value === "SWIFT" || value === "CRYPTO";
+}
+
+export function isPayoutMethod(value: string): value is PayoutMethod {
+  return value === "BANK" || value === "PUSH2CARD" || value === "UPI";
+}
+
+export type RailsProviderId = "thunes" | "terrapay";
 
 export type Corridor = {
   id: string;
@@ -17,7 +27,7 @@ export type PayinRequest = {
   userId: string;
   amountMinor: bigint;
   currency: string;
-  method: RailKind;
+  method: PayinMethod;
   country?: string;
   idempotencyKey: string;
 };
@@ -26,7 +36,7 @@ export type PayinInstruction = {
   partner: RailsProviderId;
   partnerRef: string;
   status: "AWAITING_FUNDS";
-  method: RailKind;
+  method: PayinMethod;
   currency: string;
   amountMinor: bigint;
   corridor: string;
@@ -47,14 +57,16 @@ export type PayoutRequest = {
   userId: string;
   amountMinor: bigint;
   currency: string;
-  method: RailKind;
+  method: PayoutMethod;
   country: string;
   beneficiaryName: string;
   accountNumber?: string;
   iban?: string;
   swiftBic?: string;
-  cryptoAddress?: string;
-  cryptoNetwork?: string;
+  bankName?: string;
+  cardToken?: string;
+  cardLast4?: string;
+  upiVpa?: string;
   idempotencyKey: string;
 };
 
@@ -62,7 +74,7 @@ export type PayoutSubmission = {
   partner: RailsProviderId;
   partnerRef: string;
   status: "ACCEPTED" | "REJECTED";
-  method: RailKind;
+  method: PayoutMethod;
   corridor: string;
   estimatedMinutes: number;
   message: string;

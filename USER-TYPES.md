@@ -8,7 +8,7 @@ This walkthrough ships **four** seeded types. Everything else in a fuller staff 
 
 - Personal or Business signup **label** (Business is single-user — no SMB invites).
 - Optional **crypto-friendly** flag (Jordan: on · Amira: off).
-- Surfaces: wallet, KYC status, global account, pay-in, payout (incl. SWIFT-like stub), FX, cards UI, crypto screens when the flag is on.
+- Surfaces: wallet, KYC status, global account, pay-in, payout (Bank / Push2card / UPI), FX, cards UI, crypto screens when the flag is on.
 
 Seeded:
 

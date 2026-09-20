@@ -24,22 +24,28 @@ describe("RailsPartner factory", () => {
 });
 
 describe("stub corridors", () => {
-  it("issues SWIFT and local payout references", async () => {
+  it("lists only Bank, Push2card, and UPI payout corridors", async () => {
+    const kinds = new Set((await new ThunesRailsPartner().listCorridors()).map((c) => c.kind));
+    expect([...kinds].sort()).toEqual(["BANK", "PUSH2CARD", "UPI"]);
+  });
+
+  it("issues bank payout references (SWIFT-like sits under Bank)", async () => {
     const thunes = new ThunesRailsPartner();
-    const swift = await thunes.createPayout({
+    const bank = await thunes.createPayout({
       userId: "user_1",
       amountMinor: 25_000_00n,
-      currency: "USD",
-      method: "SWIFT",
-      country: "US",
+      currency: "EUR",
+      method: "BANK",
+      country: "DE",
       beneficiaryName: "Northwind Ltd",
-      iban: "US00TEST",
-      swiftBic: "CHASUS33",
+      iban: "DE89TEST",
+      swiftBic: "COBADEFFXXX",
       idempotencyKey: "k1",
     });
-    expect(swift.partnerRef.startsWith("THN-")).toBe(true);
-    expect(swift.status).toBe("ACCEPTED");
-    expect(swift.method).toBe("SWIFT");
+    expect(bank.partnerRef.startsWith("THN-")).toBe(true);
+    expect(bank.status).toBe("ACCEPTED");
+    expect(bank.method).toBe("BANK");
+    expect(bank.corridor).toBe("bank-eur");
 
     const terra = new TerraPayRailsPartner();
     const local = await terra.createPayin({
@@ -54,18 +60,18 @@ describe("stub corridors", () => {
     expect(local.instructions.reference).toContain("SIB-");
   });
 
-  it("rejects SWIFT payouts without routing data", async () => {
+  it("rejects bank payouts without routing data", async () => {
     const partner = new ThunesRailsPartner();
     await expect(
       partner.createPayout({
         userId: "user_1",
         amountMinor: 10_00n,
         currency: "EUR",
-        method: "SWIFT",
+        method: "BANK",
         country: "DE",
         beneficiaryName: "No Rails",
         idempotencyKey: "k3",
       }),
-    ).rejects.toThrow(/IBAN or BIC/);
+    ).rejects.toThrow(/account number or IBAN/);
   });
 });

@@ -2,6 +2,7 @@ import { TxRow } from "@/components/money-ui";
 import { requireSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { displayDate } from "@/lib/format";
+import { payoutMethodLabel } from "@/lib/payments/payout";
 
 export default async function ActivityPage() {
   const session = await requireSession();
@@ -22,7 +23,7 @@ export default async function ActivityPage() {
               p.beneficiary?.name ??
               (p.direction === "PAYIN" ? "Added money" : p.description)
             }
-            subtitle={`${p.method} · ${displayDate(p.createdAt)} · ${p.status.toLowerCase()}`}
+            subtitle={`${payoutMethodLabel(p.method)} · ${displayDate(p.createdAt)} · ${p.status.toLowerCase()}`}
             amount={p.amountMinor}
             currency={p.currency}
             inbound={p.direction === "PAYIN"}

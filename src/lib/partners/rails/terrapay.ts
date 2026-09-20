@@ -1,4 +1,4 @@
-import { buildPayin, buildPayout, recall, SHARED_CORRIDORS } from "./stub-engine";
+import { buildPayin, buildPayout, recall, PAYOUT_CORRIDORS } from "./stub-engine";
 import type {
   PayinRequest,
   PayoutRequest,
@@ -10,10 +10,10 @@ export class TerraPayRailsPartner implements RailsPartner {
   readonly id = "terrapay" as const;
   readonly displayName = "TerraPay / Terra Rail (DEMO stub)";
   readonly settlementModel =
-    "DEMO — no live vendor calls. Sibtech remains the Canadian-licensed principal; this TerraPay / Terra Rail adapter is a labeled stub. Same Sibtech ledger and UX; only the rail adapter changes.";
+    "DEMO — no live vendor calls. Same three payout methods (Bank, Push2card, UPI). Push2card still hints Thunes — not a fourth proprietary rail.";
 
   async listCorridors() {
-    return SHARED_CORRIDORS;
+    return PAYOUT_CORRIDORS;
   }
 
   async createPayin(request: PayinRequest) {
