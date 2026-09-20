@@ -1,0 +1,10 @@
+{
+  "name": "Sibtech",
+  "install": "[ -f .env ] || cp .env.example .env; npm ci && npm run db:setup",
+  "terminals": [
+    {
+      "name": "next-dev",
+      "command": "npm run dev"
+    }
+  ]
+}
