@@ -1,15 +1,21 @@
 const AGE_KEY = 'mmf-age-verified'
 const SESSION_KEY = 'mmf-session'
 
-export type PlayerRole = 'm1' | 'm2' | 'f'
+export type PlayerRole = 'm1' | 'm2' | 'f' | 'p1' | 'p2'
+export type GameMode = 'draw' | 'dice' | 'truth' | 'heat' | 'scenario' | 'wheel'
+export type PartyType = 'couple' | 'mmf'
 
 export type Session = {
-  players: Record<PlayerRole, string>
+  mode: GameMode
+  party: PartyType
+  players: Partial<Record<PlayerRole, string>>
   intensity: 'warm' | 'spicy' | 'fire' | 'mix'
   doneIds: string[]
   safeWord: string
   freePasses: number
   passesLeft: number
+  heatLevel: number
+  heatDoneInLevel: number
 }
 
 export function isAgeVerified(): boolean {
@@ -24,15 +30,19 @@ export function getSession(): Session | null {
   try {
     const raw = localStorage.getItem(SESSION_KEY)
     if (!raw) return null
-    const parsed = JSON.parse(raw) as Partial<Session>
-    if (!parsed.players) return null
+    const p = JSON.parse(raw) as Partial<Session>
+    if (!p.players || !p.mode || !p.party) return null
     return {
-      players: parsed.players,
-      intensity: parsed.intensity ?? 'fire',
-      doneIds: parsed.doneIds ?? [],
-      safeWord: parsed.safeWord?.trim() || 'אדום',
-      freePasses: parsed.freePasses ?? 3,
-      passesLeft: parsed.passesLeft ?? parsed.freePasses ?? 3,
+      mode: p.mode,
+      party: p.party,
+      players: p.players,
+      intensity: p.intensity ?? 'fire',
+      doneIds: p.doneIds ?? [],
+      safeWord: p.safeWord?.trim() || 'אדום',
+      freePasses: p.freePasses ?? 3,
+      passesLeft: p.passesLeft ?? p.freePasses ?? 3,
+      heatLevel: p.heatLevel ?? 1,
+      heatDoneInLevel: p.heatDoneInLevel ?? 0,
     }
   } catch {
     return null

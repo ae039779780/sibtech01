@@ -1,21 +1,20 @@
-# MMF — משימות נועזות
+# MMF — משחקי משימות
 
-משחק משימות ל־3 שחקנים (גבר · גבר · אישה). משימות בלבד — לא היכרויות.
+משימות בלבד (לא היכרויות) לזוג או ל־MMF.
 
-## מה יש
-- 50 משימות נועזות
-- טיימר למשימה
-- מילה בטוחה + עצירה
-- כרטיסי דילוג לערב
-- מד התקדמות
+## מצבי משחק
+| מצב | בהשראת |
+|------|---------|
+| שליפה | [SwingParty](https://swingparty.app/en) |
+| קוביות | [Frisky Foreplay](https://www.friskyforeplay.com/friskyforeplayapp/) |
+| אמת / משימה | [Desire](https://www.desire.games/) |
+| סולם חום | [Joyful Couple](https://joyful-couple.com/products/naughty-game) |
+| תסריט | [Naughty Scenarios](https://joyful-couple.com/products/naughty-scenarios) |
+| גלגל | Desire wheel |
 
-## השוואה קצרה לשוק
-שודרג לפי רעיונות מ־[SwingParty](https://swingparty.app/en) (דילוג/החלפה, רמות), [TicTease](https://tictease.com/) (טיימר על הטלפון), [Frisky Foreplay](https://www.friskyforeplay.com/friskyforeplayapp/) (טיימר + free pass), ו־[Lust&Leases](https://store.steampowered.com/app/5042350/LustLeases/) (consent-first) — בלי היכרויות/צ׳אט כמו Desire או Spicer.
+גם: טיימר, מילה בטוחה, כרטיסי דילוג.
 
 ## הרצה
-
 ```bash
-cd mmf-app
-npm install
-npm run dev
+cd mmf-app && npm install && npm run dev
 ```

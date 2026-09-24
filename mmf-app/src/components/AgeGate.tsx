@@ -6,7 +6,7 @@ export function AgeGate({ onConfirm }: Props) {
   return (
     <div className="bg-atmosphere flex min-h-svh flex-col items-center justify-center px-6 text-center">
       <p className="font-display text-5xl text-[var(--champagne)]">MMF</p>
-      <p className="mt-4 text-sm text-[var(--muted)]">18+ · משימות בלבד · לא היכרויות</p>
+      <p className="mt-4 text-sm text-[var(--muted)]">18+ · משחקי משימות · זוג / MMF</p>
       <button
         type="button"
         onClick={onConfirm}
