@@ -1,20 +1,13 @@
-# MMF — משחקי משימות
+# MMF — 5 משחקים מלאים
 
-משימות בלבד (לא היכרויות) לזוג או ל־MMF.
+משימות בלבד (לא היכרויות) · זוג או MMF.
 
-## מצבי משחק
-| מצב | בהשראת |
-|------|---------|
-| שליפה | [SwingParty](https://swingparty.app/en) |
-| קוביות | [Frisky Foreplay](https://www.friskyforeplay.com/friskyforeplayapp/) |
-| אמת / משימה | [Desire](https://www.desire.games/) |
-| סולם חום | [Joyful Couple](https://joyful-couple.com/products/naughty-game) |
-| תסריט | [Naughty Scenarios](https://joyful-couple.com/products/naughty-scenarios) |
-| גלגל | Desire wheel |
+1. **לילה חם** — 12 שליפות  
+2. **קוביות אש** — 10 הטלות  
+3. **אמת או משימה** — 15 תורות  
+4. **סולם 5** — 5 רמות × 3  
+5. **הבמאי** — 10 תסריטים  
 
-גם: טיימר, מילה בטוחה, כרטיסי דילוג.
-
-## הרצה
 ```bash
 cd mmf-app && npm install && npm run dev
 ```

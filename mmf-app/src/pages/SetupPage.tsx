@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { games, type GameMode, type PartyType } from '../lib/games'
+import { getGame, type GameMode, type PartyType } from '../lib/games'
 import { saveSession, type PlayerRole } from '../lib/storage'
 
 const coupleRoles: { key: PlayerRole; label: string }[] = [
@@ -15,8 +15,8 @@ const mmfRoles: { key: PlayerRole; label: string }[] = [
 ]
 
 function parseMode(v: string | null): GameMode {
-  if (v && games.some((g) => g.id === v)) return v as GameMode
-  return 'draw'
+  const g = getGame(v)
+  return g.id
 }
 
 function parseParty(v: string | null): PartyType {
@@ -28,33 +28,34 @@ export function SetupPage() {
   const navigate = useNavigate()
   const mode = parseMode(params.get('mode'))
   const party = parseParty(params.get('party'))
+  const game = getGame(mode)
   const roles = party === 'couple' ? coupleRoles : mmfRoles
-  const game = games.find((g) => g.id === mode)
 
   const [names, setNames] = useState<Partial<Record<PlayerRole, string>>>({})
   const [safeWord, setSafeWord] = useState('אדום')
   const [freePasses, setFreePasses] = useState(3)
+  const [showRules, setShowRules] = useState(true)
 
   useEffect(() => {
     setNames({})
-  }, [party])
+    setShowRules(true)
+  }, [party, mode])
 
   function start() {
     const players: Partial<Record<PlayerRole, string>> = {}
-    for (const r of roles) {
-      players[r.key] = names[r.key]?.trim() || r.label
-    }
+    for (const r of roles) players[r.key] = names[r.key]?.trim() || r.label
     saveSession({
       mode,
       party,
       players,
-      intensity: mode === 'heat' ? 'warm' : 'fire',
-      doneIds: [],
       safeWord: safeWord.trim() || 'אדום',
       freePasses,
       passesLeft: freePasses,
+      round: 0,
+      roundsGoal: game.rounds,
       heatLevel: 1,
-      heatDoneInLevel: 0,
+      usedTruthIdx: [],
+      usedDareIdx: [],
     })
     navigate('/play')
   }
@@ -63,12 +64,31 @@ export function SetupPage() {
     <div className="bg-atmosphere min-h-svh px-5 py-8">
       <div className="mx-auto max-w-md">
         <Link to="/" className="text-sm text-[var(--muted)]">
-          ← משחקים
+          ← כל המשחקים
         </Link>
         <p className="mt-6 text-xs text-[var(--ember-hot)]">
-          {party === 'couple' ? 'זוג' : 'MMF'} · {game?.title}
+          {party === 'couple' ? 'זוג' : 'MMF'} · {game.minutes}
         </p>
-        <h1 className="mt-2 font-display text-3xl text-[var(--cream)]">שחקנים</h1>
+        <h1 className="mt-2 font-display text-3xl text-[var(--cream)]">{game.title}</h1>
+        <p className="mt-2 text-sm text-[var(--muted)]">{game.blurb}</p>
+
+        {showRules && (
+          <div className="mt-6 border border-[var(--line)] p-4">
+            <p className="text-xs text-[var(--champagne)]">חוקים</p>
+            <ul className="mt-2 space-y-1.5 text-sm text-[var(--cream)]/85">
+              {game.rules.map((r) => (
+                <li key={r}>· {r}</li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              onClick={() => setShowRules(false)}
+              className="mt-4 text-xs text-[var(--muted)]"
+            >
+              הסתר חוקים
+            </button>
+          </div>
+        )}
 
         <div className="mt-8 space-y-3">
           {roles.map((role) => (
@@ -117,7 +137,7 @@ export function SetupPage() {
           onClick={start}
           className="mt-10 w-full bg-[var(--ember)] py-3.5 text-sm font-semibold text-[var(--cream)]"
         >
-          לשחק · {game?.title}
+          להתחיל · {game.rounds} תורות
         </button>
       </div>
     </div>
