@@ -7,6 +7,9 @@ export type Session = {
   players: Record<PlayerRole, string>
   intensity: 'warm' | 'spicy' | 'fire' | 'mix'
   doneIds: string[]
+  safeWord: string
+  freePasses: number
+  passesLeft: number
 }
 
 export function isAgeVerified(): boolean {
@@ -20,7 +23,17 @@ export function setAgeVerified(): void {
 export function getSession(): Session | null {
   try {
     const raw = localStorage.getItem(SESSION_KEY)
-    return raw ? (JSON.parse(raw) as Session) : null
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as Partial<Session>
+    if (!parsed.players) return null
+    return {
+      players: parsed.players,
+      intensity: parsed.intensity ?? 'fire',
+      doneIds: parsed.doneIds ?? [],
+      safeWord: parsed.safeWord?.trim() || 'אדום',
+      freePasses: parsed.freePasses ?? 3,
+      passesLeft: parsed.passesLeft ?? parsed.freePasses ?? 3,
+    }
   } catch {
     return null
   }

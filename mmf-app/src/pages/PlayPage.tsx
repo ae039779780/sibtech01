@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
-import { tasks, type DareTask, type TaskTarget } from '../data/tasks'
+import { boldTaskCount, tasks, type DareTask, type TaskTarget } from '../data/tasks'
 import { clearSession, getSession, saveSession, type PlayerRole, type Session } from '../lib/storage'
 
 function pickTask(session: Session, excludeId?: string): DareTask | null {
@@ -28,15 +28,46 @@ function isSeatActive(target: TaskTarget, seat: PlayerRole): boolean {
   return target === seat
 }
 
+/** שניות מהטקסט, או 60 כברירת מחדל — כמו טיימרים ב־TicTease / Frisky */
+function durationOf(task: DareTask): number {
+  const match = task.body.match(/(\d+)\s*שנ/)
+  if (match) return Math.min(180, Math.max(20, Number(match[1])))
+  return 60
+}
+
 export function PlayPage() {
   const initial = getSession()
   const [session, setSession] = useState<Session | null>(initial)
   const [task, setTask] = useState<DareTask | null>(() => (initial ? pickTask(initial) : null))
+  const [running, setRunning] = useState(false)
+  const [left, setLeft] = useState(60)
+  const [stopped, setStopped] = useState(false)
 
   const targetName = useMemo(
     () => (session && task ? resolveTargetName(session, task) : ''),
     [session, task],
   )
+
+  useEffect(() => {
+    if (!task) return
+    setLeft(durationOf(task))
+    setRunning(false)
+    setStopped(false)
+  }, [task])
+
+  useEffect(() => {
+    if (!running) return
+    const id = window.setInterval(() => {
+      setLeft((s) => {
+        if (s <= 1) {
+          setRunning(false)
+          return 0
+        }
+        return s - 1
+      })
+    }, 1000)
+    return () => window.clearInterval(id)
+  }, [running])
 
   if (!session) return <Navigate to="/setup" replace />
 
@@ -46,11 +77,15 @@ export function PlayPage() {
     { key: 'f', label: session.players.f },
   ]
 
+  const total = boldTaskCount
+  const done = session.doneIds.length
+  const progress = Math.min(100, Math.round((done / total) * 100))
+
   function draw(nextSession = session!, avoidId?: string) {
     setTask(pickTask(nextSession, avoidId))
   }
 
-  function done() {
+  function doneTask() {
     if (!task || !session) return
     const next: Session = { ...session, doneIds: [...session.doneIds, task.id] }
     saveSession(next)
@@ -58,24 +93,39 @@ export function PlayPage() {
     draw(next)
   }
 
-  function skip() {
-    if (!task || !session) return
-    draw(session, task.id)
+  function usePass() {
+    if (!task || !session || session.passesLeft <= 0) return
+    const next: Session = { ...session, passesLeft: session.passesLeft - 1 }
+    saveSession(next)
+    setSession(next)
+    draw(next, task.id)
+  }
+
+  function safeStop() {
+    setRunning(false)
+    setStopped(true)
   }
 
   function resetDeck() {
     if (!session) return
-    const next = { ...session, doneIds: [] }
+    const next = { ...session, doneIds: [], passesLeft: session.freePasses }
     saveSession(next)
     setSession(next)
     draw(next)
   }
 
+  const timerLabel = `${String(Math.floor(left / 60)).padStart(1, '0')}:${String(left % 60).padStart(2, '0')}`
+
   return (
     <div className="bg-atmosphere min-h-svh px-5 py-6">
       <div className="mx-auto flex min-h-[calc(100svh-3rem)] max-w-md flex-col">
-        <header className="flex items-center justify-between">
-          <p className="font-display text-xl text-[var(--champagne)]">MMF</p>
+        <header className="flex items-center justify-between gap-3">
+          <div>
+            <p className="font-display text-xl text-[var(--champagne)]">MMF</p>
+            <p className="text-[11px] text-[var(--muted)]">
+              {done}/{total} · דילוגים {session.passesLeft}
+            </p>
+          </div>
           <button
             type="button"
             onClick={() => {
@@ -87,6 +137,10 @@ export function PlayPage() {
             סיום
           </button>
         </header>
+
+        <div className="mt-3 h-1 overflow-hidden bg-[var(--line)]">
+          <div className="h-full bg-[var(--ember)] transition-all" style={{ width: `${progress}%` }} />
+        </div>
 
         <div className="mt-4 grid grid-cols-3 gap-2">
           {seats.map((seat) => {
@@ -106,10 +160,14 @@ export function PlayPage() {
           })}
         </div>
 
-        <main className="flex flex-1 flex-col justify-center py-10">
+        <p className="mt-3 text-center text-[11px] text-[var(--muted)]">
+          מילה בטוחה: <span className="text-[var(--champagne)]">{session.safeWord}</span>
+        </p>
+
+        <main className="flex flex-1 flex-col justify-center py-8">
           {!task ? (
             <div className="text-center">
-              <p className="text-[var(--cream)]">נגמר</p>
+              <p className="font-display text-2xl text-[var(--cream)]">נגמר</p>
               <button
                 type="button"
                 onClick={resetDeck}
@@ -118,36 +176,90 @@ export function PlayPage() {
                 מחדש
               </button>
             </div>
+          ) : stopped ? (
+            <div className="text-center">
+              <p className="font-display text-2xl text-[var(--cream)]">עצרנו</p>
+              <p className="mt-2 text-sm text-[var(--muted)]">נאמרה מילה בטוחה / עצירה</p>
+              <button
+                type="button"
+                onClick={() => draw(session, task.id)}
+                className="mt-6 bg-[var(--ember)] px-6 py-3 text-sm text-[var(--cream)]"
+              >
+                משימה אחרת
+              </button>
+            </div>
           ) : (
             <div>
               <p className="text-xs text-[var(--ember-hot)]">{targetName}</p>
               <h1 className="mt-3 font-display text-3xl text-[var(--cream)]">{task.title}</h1>
               <p className="mt-4 text-sm leading-relaxed text-[var(--cream)]/85">{task.body}</p>
+
+              <div className="mt-8 flex items-center justify-between gap-4">
+                <p
+                  className={`font-display text-4xl tabular-nums ${
+                    left === 0 ? 'text-[var(--ember-hot)]' : 'text-[var(--champagne)]'
+                  }`}
+                >
+                  {timerLabel}
+                </p>
+                <div className="flex gap-2">
+                  {!running ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (left === 0) setLeft(durationOf(task))
+                        setRunning(true)
+                      }}
+                      className="bg-[var(--ember)] px-4 py-2 text-sm text-[var(--cream)]"
+                    >
+                      {left === 0 ? 'שוב' : 'התחל טיימר'}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setRunning(false)}
+                      className="border border-[var(--line)] px-4 py-2 text-sm text-[var(--muted)]"
+                    >
+                      השהה
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </main>
 
-        {task && (
-          <div className="grid grid-cols-2 gap-3">
+        {task && !stopped && (
+          <div className="space-y-3 pb-2">
             <button
               type="button"
-              onClick={skip}
-              className="border border-[var(--line)] py-3.5 text-sm text-[var(--muted)]"
+              onClick={safeStop}
+              className="w-full border border-[var(--ember)]/60 py-3 text-sm text-[var(--ember-hot)]"
             >
-              דלג
+              עצירה · {session.safeWord}
             </button>
-            <button
-              type="button"
-              onClick={done}
-              className="bg-[var(--ember)] py-3.5 text-sm font-semibold text-[var(--cream)]"
-            >
-              הבא
-            </button>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={usePass}
+                disabled={session.passesLeft <= 0}
+                className="border border-[var(--line)] py-3.5 text-sm text-[var(--muted)] disabled:opacity-30"
+              >
+                כרטיס דילוג
+              </button>
+              <button
+                type="button"
+                onClick={doneTask}
+                className="bg-[var(--ember)] py-3.5 text-sm font-semibold text-[var(--cream)]"
+              >
+                בוצע · הבא
+              </button>
+            </div>
           </div>
         )}
 
-        <p className="pt-5 text-center text-[11px] text-[var(--muted)]">
-          <Link to="/setup">שחקנים</Link>
+        <p className="pt-4 text-center text-[11px] text-[var(--muted)]">
+          <Link to="/setup">הגדרות</Link>
         </p>
       </div>
     </div>
