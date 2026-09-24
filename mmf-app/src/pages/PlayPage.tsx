@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
-import { intensityLabel, targetLabel, tasks, type DareTask } from '../data/tasks'
-import { clearSession, getSession, saveSession, type Session } from '../lib/storage'
+import { intensityLabel, tasks, type DareTask, type TaskTarget } from '../data/tasks'
+import { clearSession, getSession, saveSession, type PlayerRole, type Session } from '../lib/storage'
 
 function pickTask(session: Session, excludeId?: string): DareTask | null {
   const pool = tasks.filter((t) => {
@@ -22,6 +22,12 @@ function resolveTargetName(session: Session, task: DareTask): string {
   return 'כולם'
 }
 
+function isSeatActive(target: TaskTarget, seat: PlayerRole): boolean {
+  if (target === 'all') return true
+  if (target === 'pair') return seat === 'm1' || seat === 'm2'
+  return target === seat
+}
+
 export function PlayPage() {
   const initial = getSession()
   const [session, setSession] = useState<Session | null>(initial)
@@ -35,6 +41,12 @@ export function PlayPage() {
 
   if (!session) return <Navigate to="/setup" replace />
 
+  const seats: { key: PlayerRole; label: string }[] = [
+    { key: 'm1', label: session.players.m1 },
+    { key: 'm2', label: session.players.m2 },
+    { key: 'f', label: session.players.f },
+  ]
+
   function draw(nextSession = session!, avoidId?: string) {
     const next = pickTask(nextSession, avoidId)
     setTask(next)
@@ -44,10 +56,7 @@ export function PlayPage() {
 
   function done() {
     if (!task || !session) return
-    const next: Session = {
-      ...session,
-      doneIds: [...session.doneIds, task.id],
-    }
+    const next: Session = { ...session, doneIds: [...session.doneIds, task.id] }
     saveSession(next)
     setSession(next)
     draw(next)
@@ -77,9 +86,7 @@ export function PlayPage() {
         <header className="flex items-center justify-between gap-3">
           <div>
             <p className="font-display text-xl text-[var(--champagne)]">MMF</p>
-            <p className="text-xs text-[var(--muted)]">
-              {session.players.m1} · {session.players.m2} · {session.players.f}
-            </p>
+            <p className="text-xs text-[var(--muted)]">3 שחקנים</p>
           </div>
           <button
             type="button"
@@ -90,11 +97,28 @@ export function PlayPage() {
           </button>
         </header>
 
+        <div className="mt-5 grid grid-cols-3 gap-2">
+          {seats.map((seat) => {
+            const active = task ? isSeatActive(task.target, seat.key) : false
+            return (
+              <div
+                key={seat.key}
+                className={`px-2 py-2.5 text-center text-xs transition ${
+                  active
+                    ? 'bg-[var(--ember)] text-[var(--cream)]'
+                    : 'border border-[var(--line)] text-[var(--muted)]'
+                }`}
+              >
+                <span className="block truncate font-medium">{seat.label}</span>
+              </div>
+            )
+          })}
+        </div>
+
         <main className="flex flex-1 flex-col justify-center py-8">
           {!task ? (
             <div className="text-center">
               <p className="font-display text-2xl text-[var(--cream)]">החפיסה נגמרה</p>
-              <p className="mt-2 text-sm text-[var(--muted)]">עשיתם את כל המשימות ברמה שבחרתם</p>
               <button
                 type="button"
                 onClick={resetDeck}
@@ -111,16 +135,14 @@ export function PlayPage() {
             >
               <div className="flex items-center justify-between gap-3 text-xs">
                 <span className="text-[var(--ember-hot)]">{intensityLabel[task.intensity]}</span>
-                <span className="text-[var(--muted)]">
-                  {targetLabel[task.target]} · {targetName}
-                </span>
+                <span className="text-[var(--muted)]">מי: {targetName}</span>
               </div>
               <h1 className="mt-6 font-display text-3xl leading-snug text-[var(--cream)]">
                 {task.title}
               </h1>
               <p className="mt-4 text-sm leading-relaxed text-[var(--cream)]/85">{task.body}</p>
               <p className="mt-8 text-[11px] leading-relaxed text-[var(--muted)]">
-                לא בנוח? דלגו. בלי לחץ. הסכמה לפני ביצוע.
+                לא בנוח? דלגו. הסכמה של שלושתכם לפני ביצוע.
               </p>
             </article>
           )}
@@ -148,7 +170,7 @@ export function PlayPage() {
         <p className="pt-4 text-center text-[11px] text-[var(--muted)]">
           בוצעו {session.doneIds.length} ·{' '}
           <Link to="/setup" className="text-[var(--champagne)]">
-            שינוי הגדרות
+            שינוי שחקנים
           </Link>
         </p>
       </div>

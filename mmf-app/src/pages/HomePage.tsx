@@ -17,20 +17,31 @@ export function HomePage() {
       </header>
 
       <main className="relative z-10 flex min-h-[calc(100svh-5rem)] flex-col justify-end px-6 pb-16 sm:max-w-xl sm:justify-center sm:px-10 sm:pb-0">
-        <p className="animate-fade-up text-xs tracking-[0.25em] text-[var(--ember-hot)]">למבוגרים · 18+ · 3 שחקנים</p>
+        <p className="animate-fade-up text-xs tracking-[0.25em] text-[var(--ember-hot)]">18+ · MMF · 3 שחקנים</p>
         <h1 className="animate-fade-up-delay mt-4 font-display text-4xl leading-[1.15] text-[var(--cream)] sm:text-5xl">
           משימות נועזות
         </h1>
         <p className="animate-fade-up-delay-2 mt-5 max-w-sm text-sm leading-relaxed text-[var(--muted)] sm:text-base">
-          3 שחקנים. שולפים. מבצעים רק מה שכולם אמרו לו כן. בלי היכרויות ובלי סיבוכים.
+          בדיוק שלושה: גבר, גבר, אישה. שולפים משימה ומבצעים רק בהסכמה.
         </p>
+
+        <div className="animate-fade-up-delay-2 mt-8 grid max-w-xs grid-cols-3 gap-2">
+          {['גבר', 'גבר', 'אישה'].map((label, i) => (
+            <div
+              key={`${label}-${i}`}
+              className="border border-[var(--champagne)]/25 py-3 text-center text-xs text-[var(--champagne)]"
+            >
+              {label}
+            </div>
+          ))}
+        </div>
 
         <div className="animate-fade-up-delay-2 mt-10">
           <Link
             to="/setup"
             className="inline-block bg-[var(--ember)] px-8 py-3.5 text-sm font-semibold text-[var(--cream)] transition hover:bg-[var(--ember-hot)]"
           >
-            התחלת ערב
+            3 שחקנים · התחלה
           </Link>
         </div>
       </main>
