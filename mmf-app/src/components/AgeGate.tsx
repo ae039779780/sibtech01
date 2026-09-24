@@ -19,10 +19,10 @@ export function AgeGate({ onConfirm }: Props) {
           MMF
         </p>
         <h1 className="animate-fade-up-delay mt-6 font-display text-2xl leading-snug text-[var(--cream)] sm:text-3xl">
-          מרחב למבוגרים בלבד
+          משימות נועזות · 3 שחקנים
         </h1>
         <p className="animate-fade-up-delay-2 mt-4 text-sm leading-relaxed text-[var(--muted)] sm:text-base">
-          היכרויות דיסקרטיות לזוגות וגברים המחפשים חוויית MMF בהסכמה, כבוד וגבולות ברורים.
+          לא היכרויות. משחק משימות למבוגרים בלבד — בהסכמה, עם גבולות, בלי לבלבל.
         </p>
 
         <div className="animate-fade-up-delay-2 mt-10 flex flex-col gap-3 sm:flex-row sm:justify-center">
@@ -41,7 +41,7 @@ export function AgeGate({ onConfirm }: Props) {
           </a>
         </div>
         <p className="mt-8 text-[11px] leading-relaxed text-[var(--muted)]/80">
-          בלחיצה על כניסה אתם מאשרים שאתם בני 18 ומעלה, ושמדובר בתוכן למבוגרים בהסכמה.
+          בלחיצה על כניסה אתם מאשרים שאתם בני 18 ומעלה ושכל המשתתפים מסכימים.
         </p>
       </div>
     </div>

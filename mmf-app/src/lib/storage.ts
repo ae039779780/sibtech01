@@ -1,6 +1,13 @@
 const AGE_KEY = 'mmf-age-verified'
-const LIKES_KEY = 'mmf-likes'
-const USER_KEY = 'mmf-user-type'
+const SESSION_KEY = 'mmf-session'
+
+export type PlayerRole = 'm1' | 'm2' | 'f'
+
+export type Session = {
+  players: Record<PlayerRole, string>
+  intensity: 'warm' | 'spicy' | 'fire' | 'mix'
+  doneIds: string[]
+}
 
 export function isAgeVerified(): boolean {
   return localStorage.getItem(AGE_KEY) === '1'
@@ -10,32 +17,19 @@ export function setAgeVerified(): void {
   localStorage.setItem(AGE_KEY, '1')
 }
 
-export function getLikes(): string[] {
+export function getSession(): Session | null {
   try {
-    const raw = localStorage.getItem(LIKES_KEY)
-    return raw ? (JSON.parse(raw) as string[]) : []
+    const raw = localStorage.getItem(SESSION_KEY)
+    return raw ? (JSON.parse(raw) as Session) : null
   } catch {
-    return []
+    return null
   }
 }
 
-export function toggleLike(id: string): string[] {
-  const likes = new Set(getLikes())
-  if (likes.has(id)) likes.delete(id)
-  else likes.add(id)
-  const next = [...likes]
-  localStorage.setItem(LIKES_KEY, JSON.stringify(next))
-  return next
+export function saveSession(session: Session): void {
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session))
 }
 
-export type UserType = 'couple' | 'male' | null
-
-export function getUserType(): UserType {
-  const v = localStorage.getItem(USER_KEY)
-  if (v === 'couple' || v === 'male') return v
-  return null
-}
-
-export function setUserType(type: 'couple' | 'male'): void {
-  localStorage.setItem(USER_KEY, type)
+export function clearSession(): void {
+  localStorage.removeItem(SESSION_KEY)
 }
