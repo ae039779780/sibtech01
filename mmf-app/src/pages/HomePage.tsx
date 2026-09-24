@@ -19,12 +19,10 @@ export function HomePage() {
       <main className="relative z-10 flex min-h-[calc(100svh-5rem)] flex-col justify-end px-6 pb-16 sm:max-w-xl sm:justify-center sm:px-10 sm:pb-0">
         <p className="animate-fade-up text-xs tracking-[0.25em] text-[var(--ember-hot)]">למבוגרים · 18+ · 3 שחקנים</p>
         <h1 className="animate-fade-up-delay mt-4 font-display text-4xl leading-[1.15] text-[var(--cream)] sm:text-5xl">
-          משימות.
-          <br />
-          לא היכרויות.
+          משימות נועזות
         </h1>
         <p className="animate-fade-up-delay-2 mt-5 max-w-sm text-sm leading-relaxed text-[var(--muted)] sm:text-base">
-          גבר, גבר, אישה — בוחרים עוצמה, שולפים משימה, מבצעים רק מה שכולם אמרו לו כן.
+          3 שחקנים. שולפים. מבצעים רק מה שכולם אמרו לו כן. בלי היכרויות ובלי סיבוכים.
         </p>
 
         <div className="animate-fade-up-delay-2 mt-10">

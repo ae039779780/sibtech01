@@ -9,9 +9,9 @@ const roles: { key: PlayerRole; label: string; placeholder: string }[] = [
 ]
 
 const levels = [
-  { id: 'warm' as const, label: 'חם', hint: 'מבטים, דיבור, מגע קל' },
+  { id: 'fire' as const, label: 'נועז', hint: 'סצנות חזקות · ברירת מחדל' },
   { id: 'spicy' as const, label: 'חריף', hint: 'בימוי, תורות, מגע מכוון' },
-  { id: 'fire' as const, label: 'נועז', hint: 'סצנות קצרות וחזקות' },
+  { id: 'warm' as const, label: 'חם', hint: 'מבטים, דיבור, מגע קל' },
   { id: 'mix' as const, label: 'מיקס', hint: 'הכל מהחפיסה' },
 ]
 
@@ -22,7 +22,7 @@ export function SetupPage() {
     m2: '',
     f: '',
   })
-  const [intensity, setIntensity] = useState<(typeof levels)[number]['id']>('mix')
+  const [intensity, setIntensity] = useState<(typeof levels)[number]['id']>('fire')
 
   function start() {
     const players = {

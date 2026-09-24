@@ -19,10 +19,10 @@ export function AgeGate({ onConfirm }: Props) {
           MMF
         </p>
         <h1 className="animate-fade-up-delay mt-6 font-display text-2xl leading-snug text-[var(--cream)] sm:text-3xl">
-          משימות נועזות · 3 שחקנים
+          משימות נועזות
         </h1>
         <p className="animate-fade-up-delay-2 mt-4 text-sm leading-relaxed text-[var(--muted)] sm:text-base">
-          לא היכרויות. משחק משימות למבוגרים בלבד — בהסכמה, עם גבולות, בלי לבלבל.
+          3 שחקנים · למבוגרים בלבד · הסכמה לפני כל משימה
         </p>
 
         <div className="animate-fade-up-delay-2 mt-10 flex flex-col gap-3 sm:flex-row sm:justify-center">
