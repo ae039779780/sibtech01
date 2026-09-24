@@ -115,9 +115,9 @@ export default function Home() {
           <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-6xl flex-col justify-end px-5 pb-16 pt-28 sm:px-8 sm:pb-20 lg:justify-center lg:pb-24">
             <motion.div
               className="max-w-2xl"
-              initial={reduce ? false : { opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+              initial={false}
+              animate={reduce ? undefined : { opacity: [0.92, 1], y: [12, 0] }}
+              transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
             >
               <p className="font-[family-name:var(--font-display)] text-5xl leading-[0.95] tracking-tight sm:text-7xl lg:text-8xl">
                 Sibtech
