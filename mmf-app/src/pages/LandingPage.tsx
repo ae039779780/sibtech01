@@ -4,7 +4,7 @@ import { setUserType } from '../lib/storage'
 export function LandingPage() {
   return (
     <div className="bg-atmosphere noise-overlay relative min-h-svh overflow-hidden">
-      <div className="absolute inset-0">
+      <div className="pointer-events-none absolute inset-0">
         <img
           src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=1800&q=80"
           alt=""
