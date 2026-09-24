@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { boldTaskCount } from '../data/tasks'
 import { saveSession, type PlayerRole } from '../lib/storage'
 
 const roles: { key: PlayerRole; label: string }[] = [
@@ -8,16 +9,9 @@ const roles: { key: PlayerRole; label: string }[] = [
   { key: 'f', label: 'אישה' },
 ]
 
-const levels = [
-  { id: 'fire' as const, label: 'נועז' },
-  { id: 'spicy' as const, label: 'חריף' },
-  { id: 'warm' as const, label: 'חם' },
-]
-
 export function SetupPage() {
   const navigate = useNavigate()
   const [names, setNames] = useState<Record<PlayerRole, string>>({ m1: '', m2: '', f: '' })
-  const [intensity, setIntensity] = useState<(typeof levels)[number]['id']>('fire')
 
   function start() {
     saveSession({
@@ -26,7 +20,7 @@ export function SetupPage() {
         m2: names.m2.trim() || 'גבר 2',
         f: names.f.trim() || 'אישה',
       },
-      intensity,
+      intensity: 'fire',
       doneIds: [],
     })
     navigate('/play')
@@ -39,6 +33,7 @@ export function SetupPage() {
           ← חזרה
         </Link>
         <h1 className="mt-6 font-display text-3xl text-[var(--cream)]">3 שחקנים</h1>
+        <p className="mt-2 text-sm text-[var(--muted)]">{boldTaskCount} משימות נועזות</p>
 
         <div className="mt-8 space-y-3">
           {roles.map((role) => (
@@ -50,23 +45,6 @@ export function SetupPage() {
               aria-label={role.label}
               className="w-full border border-[var(--line)] bg-transparent px-3 py-3.5 text-[var(--cream)] outline-none placeholder:text-[var(--muted)] focus:border-[var(--ember)]"
             />
-          ))}
-        </div>
-
-        <div className="mt-8 flex gap-2">
-          {levels.map((level) => (
-            <button
-              key={level.id}
-              type="button"
-              onClick={() => setIntensity(level.id)}
-              className={`flex-1 py-3 text-sm ${
-                intensity === level.id
-                  ? 'bg-[var(--ember)] text-[var(--cream)]'
-                  : 'border border-[var(--line)] text-[var(--muted)]'
-              }`}
-            >
-              {level.label}
-            </button>
           ))}
         </div>
 
