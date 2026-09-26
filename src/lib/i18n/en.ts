@@ -1,0 +1,40 @@
+export const en = {
+  brand: "Sibtech",
+  tagline: "Canadian-licensed money movement for a global life.",
+  license: "Canadian financial license",
+  nav: {
+    product: "Product",
+    login: "Log in",
+    open: "Open account",
+    home: "Home",
+    wallet: "Wallet",
+    payin: "Add money",
+    send: "Send",
+    exchange: "Exchange",
+    cards: "Cards",
+    accounts: "Global account",
+    currencies: "Currencies",
+    fx: "FX & spread",
+    profile: "Profile",
+    activity: "Activity",
+  },
+  admin: {
+    dashboard: "Dashboard",
+    users: "Users",
+    kyc: "KYC / Cases",
+    transactions: "Transactions",
+    rails: "Pay-ins / Payouts",
+    fx: "FX controls",
+    audit: "Audit",
+    settings: "Settings",
+  },
+  kyc: {
+    UNSTARTED: "Start verification",
+    PENDING: "Documents needed",
+    IN_REVIEW: "In review",
+    APPROVED: "Verified",
+    REJECTED: "Needs attention",
+  },
+} as const;
+
+export type Messages = typeof en;

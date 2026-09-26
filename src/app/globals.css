@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+:root {
+  --navy: #071422;
+  --navy-mid: #0c1f33;
+  --navy-lift: #143047;
+  --teal: #1fb6c4;
+  --teal-deep: #0e7c8b;
+  --gold: #f0b429;
+  --coral: #ff6b45;
+  --ink: #e8eef5;
+  --muted: #8fa3b8;
+  --line: rgba(232, 238, 245, 0.1);
+  --danger: #fb7185;
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --bg: #071018;
+  --surface: #0c1f33;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
+}
+
+html[data-theme="light"] {
+  --bg: #f3f7f8;
+  --surface: #ffffff;
+  --ink: #0b1f33;
+  --muted: #4d6478;
+  --line: rgba(11, 31, 51, 0.1);
+  --navy: #f3f7f8;
+  --navy-mid: #ffffff;
+  --navy-lift: #e7eef2;
+}
+
+@theme inline {
+  --color-navy: var(--navy);
+  --color-navy-mid: var(--navy-mid);
+  --color-navy-lift: var(--navy-lift);
+  --color-teal: var(--teal);
+  --color-teal-deep: var(--teal-deep);
+  --color-gold: var(--gold);
+  --color-coral: var(--coral);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-danger: var(--danger);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
+}
+
+* {
+  border-color: var(--line);
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--teal) 40%, transparent);
+}
+
+.display {
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+}
+
+.mesh {
+  background:
+    radial-gradient(900px 420px at 12% -8%, rgba(31, 182, 196, 0.16), transparent 50%),
+    radial-gradient(700px 360px at 90% 0%, rgba(255, 107, 69, 0.09), transparent 46%),
+    #071018;
+}
+
+.card {
+  background: color-mix(in oklab, var(--surface) 92%, white 4%);
+  border: 1px solid var(--line);
+  border-radius: 1.25rem;
+}
+
+.hairline {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
